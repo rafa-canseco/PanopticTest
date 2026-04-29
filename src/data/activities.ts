@@ -211,8 +211,11 @@ export const activities: ActivityRow[] = [
     isVaultManagedRebalance: false,
   },
 
-  // Dave: whale with $1M idle lending-vault capital. Low quality (0.30 -> 0.5x).
-  // Demonstrates that raw size alone does not dominate the leaderboard.
+  // Dave: whale with $1M lending-vault capital that sits mostly idle (4 active
+  // hours per day) and is poorly utilized when active (0.30 -> 0.5x quality).
+  // Demonstrates that raw size alone does not dominate the leaderboard: even
+  // with 10x Alice's capital, Dave's idle + low-quality combination scores
+  // below Alice's steady, fully-active, high-quality deposits.
   {
     id: "dave-1",
     userId: "dave",
@@ -221,7 +224,7 @@ export const activities: ActivityRow[] = [
     strategy: "lending-vault",
     vaultType: "lending",
     usdCapital: 1_000_000,
-    activeHours: 24,
+    activeHours: 4,
     usefulRatio: 0.3,
     isShortLived: false,
     isVaultManagedRebalance: false,
@@ -234,7 +237,7 @@ export const activities: ActivityRow[] = [
     strategy: "lending-vault",
     vaultType: "lending",
     usdCapital: 1_000_000,
-    activeHours: 24,
+    activeHours: 4,
     usefulRatio: 0.3,
     isShortLived: false,
     isVaultManagedRebalance: false,
@@ -247,7 +250,7 @@ export const activities: ActivityRow[] = [
     strategy: "lending-vault",
     vaultType: "lending",
     usdCapital: 1_000_000,
-    activeHours: 24,
+    activeHours: 4,
     usefulRatio: 0.3,
     isShortLived: false,
     isVaultManagedRebalance: false,

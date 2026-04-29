@@ -1,12 +1,16 @@
 import { activities } from "@/data/activities";
 import { campaigns } from "@/data/campaigns";
 import { users } from "@/data/users";
-import { aggregateUserPoints, calculateActivityPoints } from "@/lib/points";
-
-const EPS = 1e-6;
+import {
+  aggregateUserPoints,
+  calculateActivityPoints,
+  getQualityMultiplier,
+} from "@/lib/points";
+import type { ActivityPoints } from "@/lib/types";
 
 function approx(a: number, b: number): boolean {
-  return Math.abs(a - b) < EPS;
+  const tol = Math.max(1e-6, 1e-9 * Math.max(Math.abs(a), Math.abs(b)));
+  return Math.abs(a - b) <= tol;
 }
 
 function fail(msg: string): never {
@@ -22,7 +26,23 @@ function fmt(n: number): string {
   return n.toLocaleString("en-US", { maximumFractionDigits: 2 });
 }
 
-// 1. Every activity's breakdown reconciles internally.
+// 0. Datasets are non-empty (defends against accidental "all green on no data").
+check(users.length > 0, "users dataset is empty");
+check(activities.length > 0, "activities dataset is empty");
+check(campaigns.length > 0, "campaigns dataset is empty");
+
+// 1. Quality-band boundaries. The bands are right-open: a refactor that flips
+//    `<` to `<=` would silently re-classify users on a band edge.
+check(getQualityMultiplier(0) === 0.5, "quality boundary: 0.0 -> 0.5x");
+check(getQualityMultiplier(0.39) === 0.5, "quality boundary: 0.39 -> 0.5x");
+check(getQualityMultiplier(0.4) === 1.0, "quality boundary: exactly 0.40 -> 1.0x");
+check(getQualityMultiplier(0.69) === 1.0, "quality boundary: 0.69 -> 1.0x");
+check(getQualityMultiplier(0.7) === 1.25, "quality boundary: exactly 0.70 -> 1.25x");
+check(getQualityMultiplier(0.89) === 1.25, "quality boundary: 0.89 -> 1.25x");
+check(getQualityMultiplier(0.9) === 1.5, "quality boundary: exactly 0.90 -> 1.5x");
+check(getQualityMultiplier(1.0) === 1.5, "quality boundary: 1.0 -> 1.5x");
+
+// 2. Every activity's breakdown reconciles internally.
 for (const activity of activities) {
   const { breakdown } = calculateActivityPoints(activity, campaigns);
   const sum =
@@ -37,7 +57,7 @@ for (const activity of activities) {
   );
 }
 
-// 2. Per user, vault + trader == total, and matches sum of activity finalPoints.
+// 3. Per user, vault + trader == total, and matches sum of activity finalPoints.
 const summaries = aggregateUserPoints(users, activities, campaigns);
 for (const s of summaries) {
   check(
@@ -48,16 +68,20 @@ for (const s of summaries) {
   check(approx(sumFinal, s.totalPoints), `sum of activity finals != total for ${s.user.name}`);
 }
 
-// 3. Persona-driven sanity checks.
-function findActivity(id: string) {
-  const found = summaries
-    .flatMap((s) => s.activities)
-    .find((a) => a.activity.id === id);
-  if (!found) fail(`activity ${id} not found`);
+// 4. Persona-driven sanity checks.
+function findActivity(id: string): ActivityPoints {
+  const found = summaries.flatMap((s) => s.activities).find((a) => a.activity.id === id);
+  if (!found) throw new Error(`activity ${id} not found`);
   return found;
 }
 
 const aliceWeek1 = findActivity("alice-1");
+// $100k * (24/24) * 1.25 quality * 1.2 Lending Sprint = $150,000.
+const aliceWeek1Expected = 100_000 * 1.25 * 1.2;
+check(
+  approx(aliceWeek1.breakdown.finalPoints, aliceWeek1Expected),
+  `alice-1 finalPoints: expected ${aliceWeek1Expected}, got ${aliceWeek1.breakdown.finalPoints}`,
+);
 check(aliceWeek1.breakdown.campaignUplift > 0, "alice-1 should get Lending Sprint boost");
 
 const aliceWeek2 = findActivity("alice-3");
@@ -83,7 +107,22 @@ check(
   "eve-1 churn multiplier should be 0.25",
 );
 
-// 4. Leaderboard output.
+// 5. Persona narrative: Alice (steady, high quality) outranks Dave (whale,
+//    idle, low quality). Pinning this lets the leaderboard "story" survive
+//    future tweaks to the dataset.
+function findUser(id: string) {
+  const found = summaries.find((s) => s.user.id === id);
+  if (!found) throw new Error(`user ${id} summary missing`);
+  return found;
+}
+const alice = findUser("alice");
+const dave = findUser("dave");
+check(
+  alice.totalPoints > dave.totalPoints,
+  `Alice (${fmt(alice.totalPoints)}) must outrank Dave (${fmt(dave.totalPoints)})`,
+);
+
+// 6. Leaderboard output.
 const sorted = [...summaries].sort((a, b) => b.totalPoints - a.totalPoints);
 
 console.log("HyperUnicorn Points - Leaderboard (3-week window)");
@@ -108,4 +147,4 @@ for (const s of sorted) {
 }
 
 console.log();
-console.log("All reconciliation and persona checks passed.");
+console.log("All reconciliation, boundary, and persona checks passed.");
