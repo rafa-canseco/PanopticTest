@@ -45,12 +45,16 @@ export function UserBreakdown({ summary }: UserBreakdownProps) {
     },
     {
       label: "Churn discount",
+      // Render based on magnitude, not sign: the engine produces a non-negative
+      // discount today, but the UI semantics are always "this is a deduction
+      // from preChurnPoints" regardless of whether a future engine change
+      // signs it differently.
       value:
-        breakdown.churnDiscount > 0
-          ? `−${formatPoints(breakdown.churnDiscount)}`
+        breakdown.churnDiscount !== 0
+          ? `−${formatPoints(Math.abs(breakdown.churnDiscount))}`
           : "0",
-      numeric: breakdown.churnDiscount,
-      forceNegative: breakdown.churnDiscount > 0,
+      numeric: -Math.abs(breakdown.churnDiscount),
+      forceNegative: breakdown.churnDiscount !== 0,
     },
     {
       label: "Final points",

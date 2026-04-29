@@ -13,9 +13,12 @@ interface ActivityTableProps {
   activities: EnrichedActivity[];
 }
 
+const MULT_EPS = 1e-6;
+
 function multiplierClass(m: number): string {
-  if (m > 1) return "text-emerald-700 dark:text-emerald-400";
-  if (m < 1) return "text-rose-700 dark:text-rose-400";
+  if (!Number.isFinite(m)) return "text-amber-600 dark:text-amber-400";
+  if (m > 1 + MULT_EPS) return "text-emerald-700 dark:text-emerald-400";
+  if (m < 1 - MULT_EPS) return "text-rose-700 dark:text-rose-400";
   return "text-zinc-500 dark:text-zinc-500";
 }
 
@@ -31,20 +34,25 @@ export function ActivityTable({ userName, activities }: ActivityTableProps) {
         </p>
       </div>
       {activities.length === 0 ? (
-        <p className="px-4 py-6 text-sm text-zinc-500 dark:text-zinc-400">No activity rows.</p>
+        <p className="px-4 py-6 text-sm text-zinc-500 dark:text-zinc-400">
+          No activity rows for this user in the season window.
+        </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
+            <caption className="sr-only">
+              Per-activity breakdown for {userName}, sorted by date ascending.
+            </caption>
             <thead className="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                <th className="px-3 py-2 text-left font-medium">Date</th>
-                <th className="px-3 py-2 text-left font-medium">Strategy</th>
-                <th className="px-3 py-2 text-left font-medium">Category</th>
-                <th className="px-3 py-2 text-right font-medium">USD-days</th>
-                <th className="px-3 py-2 text-right font-medium">Quality ×</th>
-                <th className="px-3 py-2 text-right font-medium">Campaign ×</th>
-                <th className="px-3 py-2 text-right font-medium">Churn ×</th>
-                <th className="px-3 py-2 text-right font-medium">Final</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium">Date</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium">Strategy</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium">Category</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">USD-days</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Quality ×</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Campaign ×</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Churn ×</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Final</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
