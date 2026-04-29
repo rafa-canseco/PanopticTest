@@ -18,7 +18,7 @@ Daily Points = Active USD-days × Quality × Campaign × Churn
 
 - **Active USD-days:** capital over time. The base conversion is **1 point per $1 active for 1 full day**. Example: $10,000 active for 12 hours becomes `10,000 × 12 / 24 = 5,000` base points.
 - **Quality:** separates capital that is merely present from capital that is productive. Example: an LP position that stays in-range and is borrowed by option buyers should count more than one parked out-of-range.
-- **Campaign:** capped seasonal boosts for protocol priorities. Example: Gamma Week boosts eligible gamma or long-vol activity that stays active for at least 12 hours.
+- **Campaign:** capped seasonal boosts for protocol priorities like vault depth, volatility participation, or yield windows. Example: during Gamma Week, gamma-scalping and long-vol activity earn **1.30×** instead of **1.00×**, but only on rows that stay active at least 12 hours.
 - **Churn:** discounts short-lived farming behavior. Example: rapid open/close activity counts at **25%**, while vault-managed rebalancing is not treated as churn.
 
 The system separates **Vault Points** and **Trader Points** because vault users and direct traders create different kinds of value:
