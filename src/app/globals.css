@@ -1,26 +1,276 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Surfaces */
+  --color-bg: #0a0118;
+  --color-surface: #160934;
+  --color-elevated: #1f124a;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Lines & dividers */
+  --color-line: rgba(78, 20, 208, 0.18);
+
+  /* Text */
+  --color-ink: #ffffff;
+  --color-foreground: #e8e0f5;
+  --color-muted: #a89bc8;
+
+  /* Brand (Panoptic) */
+  --color-brand: #4e14d0;
+  --color-brand-light: #9b6fff;
+  --color-brand-soft: rgba(78, 20, 208, 0.18);
+  --color-success: #00d091;
+
+  /* Fonts (loaded by next/font in layout.tsx) */
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-ibm-plex-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg);
+  background-image:
+    linear-gradient(rgba(78, 20, 208, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(78, 20, 208, 0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-attachment: fixed;
+  color: var(--color-foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+code,
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+::selection {
+  background: var(--color-brand);
+  color: var(--color-ink);
+}
+
+/* Hero radial glow — sits behind the header and fades into the bg */
+.brand-glow {
+  background: radial-gradient(
+    ellipse 900px 420px at 30% -10%,
+    rgba(78, 20, 208, 0.32),
+    transparent 70%
+  );
+}
+
+/* Hairline gradient rule — draws an architectural line that fades to nothing */
+.rule-fade {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--color-brand-light) 0%,
+    rgba(78, 20, 208, 0.4) 25%,
+    var(--color-line) 60%,
+    transparent 100%
+  );
+}
+
+/* One-shot staggered reveal on initial mount */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  animation: reveal-up 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.reveal-1 {
+  animation-delay: 60ms;
+}
+.reveal-2 {
+  animation-delay: 140ms;
+}
+.reveal-3 {
+  animation-delay: 220ms;
+}
+.reveal-4 {
+  animation-delay: 320ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-1,
+  .reveal-2,
+  .reveal-3,
+  .reveal-4 {
+    animation: none;
+  }
+}
+
+/* Tour CTA — ambient brand-purple glow with a slow pulse */
+@keyframes tour-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 24px rgba(155, 111, 255, 0.42),
+      0 0 0 0 rgba(155, 111, 255, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 36px rgba(155, 111, 255, 0.6),
+      0 0 0 10px rgba(155, 111, 255, 0);
+  }
+}
+
+.tour-glow {
+  animation: tour-pulse 2.6s ease-in-out infinite;
+}
+
+.tour-glow:hover {
+  animation: none;
+  box-shadow:
+    0 0 40px rgba(155, 111, 255, 0.7),
+    0 0 0 0 transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-glow {
+    animation: none;
+    box-shadow: 0 0 24px rgba(155, 111, 255, 0.42);
+  }
+}
+
+/* Driver.js — match the Panoptic spec-sheet theme.
+   driver.css ships after our globals at runtime, so we use !important
+   on color-bearing properties to win the cascade. */
+.driver-popover {
+  background-color: var(--color-surface) !important;
+  border: 1px solid rgba(78, 20, 208, 0.4) !important;
+  border-radius: 0 !important;
+  color: var(--color-foreground) !important;
+  box-shadow:
+    0 24px 60px rgba(78, 20, 208, 0.18),
+    0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  padding: 18px 20px !important;
+  max-width: 340px !important;
+}
+
+.driver-popover * {
+  font-family: var(--font-sans), system-ui, sans-serif !important;
+}
+
+.driver-popover-title {
+  color: var(--color-ink) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+  line-height: 1.3 !important;
+}
+
+.driver-popover-description {
+  color: var(--color-foreground) !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+  margin-top: 8px !important;
+}
+
+.driver-popover-description strong,
+.driver-popover-description em {
+  color: var(--color-ink) !important;
+}
+
+.driver-popover-progress-text {
+  color: var(--color-muted) !important;
+  font-family: var(--font-mono), ui-monospace, monospace !important;
+  font-size: 10px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.driver-popover-close-btn {
+  color: var(--color-muted) !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  width: 28px !important;
+  height: 24px !important;
+  top: 6px !important;
+  right: 6px !important;
+}
+
+.driver-popover-close-btn:hover,
+.driver-popover-close-btn:focus {
+  color: var(--color-ink) !important;
+}
+
+.driver-popover-footer {
+  margin-top: 14px !important;
+  border-top: 1px solid var(--color-line) !important;
+  padding-top: 12px !important;
+}
+
+.driver-popover-footer button {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 1px solid var(--color-line) !important;
+  border-radius: 0 !important;
+  color: var(--color-foreground) !important;
+  font-family: var(--font-sans), system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.12em;
+  padding: 5px 12px !important;
+  text-shadow: none !important;
+  text-transform: uppercase;
+  transition: all 150ms ease;
+}
+
+.driver-popover-footer button:hover,
+.driver-popover-footer button:focus {
+  background: var(--color-elevated) !important;
+  background-color: var(--color-elevated) !important;
+  border-color: rgba(78, 20, 208, 0.5) !important;
+  color: var(--color-ink) !important;
+}
+
+.driver-popover-next-btn {
+  background-color: var(--color-brand) !important;
+  border-color: var(--color-brand) !important;
+  color: var(--color-ink) !important;
+}
+
+.driver-popover-next-btn:hover,
+.driver-popover-next-btn:focus {
+  background-color: var(--color-brand-light) !important;
+  border-color: var(--color-brand-light) !important;
+}
+
+/* Arrows — driver.js draws arrows as a colored CSS border. We tint the
+   matching side to the popover background so the arrow appears solid. */
+.driver-popover-arrow {
+  border-width: 6px !important;
+}
+.driver-popover-arrow-side-top {
+  border-top-color: var(--color-surface) !important;
+}
+.driver-popover-arrow-side-bottom {
+  border-bottom-color: var(--color-surface) !important;
+}
+.driver-popover-arrow-side-left {
+  border-left-color: var(--color-surface) !important;
+}
+.driver-popover-arrow-side-right {
+  border-right-color: var(--color-surface) !important;
+}
+
+/* Backdrop */
+.driver-overlay {
+  fill: #050010 !important;
+  fill-opacity: 0.78 !important;
+}
+
+/* Highlighted element gets a brand-purple ring */
+.driver-active-element,
+.driver-active-element-frame {
+  outline: 1px solid var(--color-brand-light);
+  outline-offset: 6px;
+  box-shadow: 0 0 0 6px rgba(78, 20, 208, 0.18);
 }

@@ -12,7 +12,13 @@ interface Stats {
   boosted: number;
 }
 
-type Tone = "boosted" | "partial" | "eligible-no-qualify" | "no-eligible";
+type Outcome = "earned" | "partial" | "missed-hours" | "wrong-strategy" | "no-activity";
+
+interface OutcomeView {
+  kind: Outcome;
+  badge: string;
+  detail: string;
+}
 
 function analyze(campaign: Campaign, activities: ActivityRow[]): Stats {
   const inWindow = activities.filter(
@@ -29,81 +35,130 @@ function analyze(campaign: Campaign, activities: ActivityRow[]): Stats {
   };
 }
 
-function describe(stats: Stats, campaign: Campaign): { tone: Tone; label: string; detail: string } {
-  if (stats.eligibleStrategy === 0) {
+function describe(stats: Stats, c: Campaign): OutcomeView {
+  if (stats.boosted > stats.eligibleStrategy) {
+    // analyze() makes this impossible (boosted is filtered from eligibleStrategy),
+    // but the invariant is worth surfacing if a future change breaks it instead
+    // of producing a negative "missed" count silently.
+    console.error(
+      `CampaignEligibility invariant violated for ${c.id}: boosted=${stats.boosted} > eligibleStrategy=${stats.eligibleStrategy}`,
+    );
     return {
-      tone: "no-eligible",
-      label: "Not boosted",
-      detail:
-        stats.inWindow === 0
-          ? "no activity in this campaign's window"
-          : "in-window activity wasn't on an eligible strategy",
+      kind: "earned",
+      badge: "Earned",
+      detail: "All eligible rows qualified.",
     };
   }
-  if (stats.boosted === 0) {
+  if (stats.boosted > 0 && stats.boosted === stats.eligibleStrategy) {
     return {
-      tone: "eligible-no-qualify",
-      label: "Eligible, no boost",
-      detail: `${stats.eligibleStrategy} eligible row${stats.eligibleStrategy === 1 ? "" : "s"}, all under the ${campaign.minActiveHours}h minimum`,
+      kind: "earned",
+      badge: "Earned",
+      detail: `${stats.boosted} eligible row${stats.boosted === 1 ? "" : "s"} qualified — full boost claimed.`,
     };
   }
-  if (stats.boosted < stats.eligibleStrategy) {
+  if (stats.boosted > 0) {
+    const missed = stats.eligibleStrategy - stats.boosted;
     return {
-      tone: "partial",
-      label: `${stats.boosted} of ${stats.eligibleStrategy} boosted`,
-      detail: `${stats.eligibleStrategy - stats.boosted} eligible row${stats.eligibleStrategy - stats.boosted === 1 ? "" : "s"} under the ${campaign.minActiveHours}h minimum`,
+      kind: "partial",
+      badge: `${stats.boosted} of ${stats.eligibleStrategy} earned`,
+      detail: `${missed} eligible row${missed === 1 ? "" : "s"} were under the ${c.minActiveHours}h minimum.`,
+    };
+  }
+  if (stats.eligibleStrategy > 0) {
+    return {
+      kind: "missed-hours",
+      badge: "Missed cutoff",
+      detail: `${stats.eligibleStrategy} eligible row${stats.eligibleStrategy === 1 ? " was" : "s were"} under the ${c.minActiveHours}h minimum. Hold longer to qualify.`,
+    };
+  }
+  if (stats.inWindow > 0) {
+    return {
+      kind: "wrong-strategy",
+      badge: "Didn't apply",
+      detail: `Activity in this window wasn't on an eligible strategy.`,
     };
   }
   return {
-    tone: "boosted",
-    label: `All ${stats.boosted} boosted`,
-    detail: `${campaign.eligibleStrategies.join(", ")} qualified during the window`,
+    kind: "no-activity",
+    badge: "Didn't apply",
+    detail: `No activity during this campaign window.`,
   };
 }
 
-function pillClass(tone: Tone): string {
-  const base = "rounded-full px-2 py-0.5 text-xs font-medium ";
-  switch (tone) {
-    case "boosted":
-      return base + "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200";
+function dotColor(o: Outcome): string {
+  switch (o) {
+    case "earned":
+      return "bg-success";
     case "partial":
-      return base + "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200";
-    case "eligible-no-qualify":
-      return base + "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200";
-    case "no-eligible":
-      return base + "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+      return "bg-amber-400";
+    case "missed-hours":
+      return "bg-rose-400";
+    case "wrong-strategy":
+    case "no-activity":
+      return "bg-line";
+  }
+}
+
+function badgeClass(o: Outcome): string {
+  const base = "rounded-full border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] ";
+  switch (o) {
+    case "earned":
+      return base + "border-success/40 bg-success/10 text-success";
+    case "partial":
+      return base + "border-amber-400/40 bg-amber-400/10 text-amber-200";
+    case "missed-hours":
+      return base + "border-rose-400/40 bg-rose-400/10 text-rose-200";
+    case "wrong-strategy":
+    case "no-activity":
+      return base + "border-line bg-elevated text-muted";
   }
 }
 
 export function CampaignEligibility({ campaigns, activities }: CampaignEligibilityProps) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <header className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
-          Campaign eligibility
+    <section
+      data-tour="eligibility"
+      className="border border-line bg-surface"
+      aria-labelledby="eligibility-heading"
+    >
+      <header className="border-b border-line px-6 py-5">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+          Section · Campaigns
+        </div>
+        <h2 id="eligibility-heading" className="mt-1 text-lg font-bold tracking-tight text-ink">
+          Did campaigns boost your score?
         </h2>
-        <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-          Why this user did or didn&apos;t earn each campaign boost.
+        <p className="mt-2 text-sm text-muted">
+          Each season runs targeted boosts. Here&apos;s whether your activity claimed each one.
         </p>
       </header>
-      <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+      <ul className="divide-y divide-line">
         {campaigns.map((c) => {
           const stats = analyze(c, activities);
-          const { tone, label, detail } = describe(stats, c);
+          const view = describe(stats, c);
           return (
-            <li key={c.id} className="px-4 py-3">
-              <div className="flex items-baseline justify-between gap-2">
-                <h3 className="text-sm font-medium text-zinc-950 dark:text-zinc-50">{c.name}</h3>
-                <span className={pillClass(tone)}>{label}</span>
+            <li key={c.id} className="px-6 py-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <div className="flex items-baseline gap-2">
+                  <span
+                    aria-hidden
+                    className={`mr-1 inline-block h-2 w-2 rounded-full ${dotColor(view.kind)}`}
+                  />
+                  <h3 className="text-sm font-bold text-ink">{c.name}</h3>
+                  <span className="font-mono text-xs text-brand-light">
+                    {formatMultiplier(c.multiplier)}
+                  </span>
+                </div>
+                <span className={badgeClass(view.kind)}>{view.badge}</span>
               </div>
-              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{detail}</p>
-              <p className="mt-1 font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
-                {formatMultiplier(c.multiplier)} · ≥{c.minActiveHours}h · {c.startDate} → {c.endDate}
+              <p className="mt-1.5 ml-5 text-xs text-foreground">{view.detail}</p>
+              <p className="mt-1 ml-5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+                ≥{c.minActiveHours}h · {c.startDate} → {c.endDate}
               </p>
             </li>
           );
         })}
       </ul>
-    </div>
+    </section>
   );
 }

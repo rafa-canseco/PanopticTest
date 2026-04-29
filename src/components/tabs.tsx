@@ -39,10 +39,12 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
         role="tablist"
         aria-orientation="horizontal"
         onKeyDown={handleKeyDown}
-        className="flex gap-1 border-b border-zinc-200 dark:border-zinc-800"
+        data-tour="tabs"
+        className="flex gap-1 border-b border-line"
       >
-        {tabs.map((t) => {
+        {tabs.map((t, i) => {
           const selected = t.id === active;
+          const indexLabel = String(i + 1).padStart(2, "0");
           return (
             <button
               key={t.id}
@@ -54,13 +56,21 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
               tabIndex={selected ? 0 : -1}
               onClick={() => onChange(t.id)}
               className={
-                "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 " +
+                "group -mb-px flex items-baseline gap-2 border-b-2 px-2 py-3 text-sm font-medium uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light sm:px-4 " +
                 (selected
-                  ? "border-indigo-500 text-zinc-950 dark:text-zinc-50"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100")
+                  ? "border-brand-light text-ink"
+                  : "border-transparent text-muted hover:text-foreground")
               }
             >
-              {t.label}
+              <span
+                className={
+                  "font-mono text-[10px] tracking-normal " +
+                  (selected ? "text-brand-light" : "text-line")
+                }
+              >
+                {indexLabel}
+              </span>
+              <span>{t.label}</span>
             </button>
           );
         })}
@@ -73,7 +83,7 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
             role="tabpanel"
             id={`${baseId}-panel-${t.id}`}
             aria-labelledby={`${baseId}-tab-${t.id}`}
-            className="pt-6"
+            className="pt-8"
           >
             {t.panel}
           </div>

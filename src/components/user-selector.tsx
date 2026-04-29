@@ -8,13 +8,18 @@ interface UserSelectorProps {
 
 export function UserSelector({ users, selectedUserId, onSelect }: UserSelectorProps) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+    <section
+      data-tour="user-selector"
+      className="flex flex-col gap-3 border border-line bg-surface px-5 py-4 sm:flex-row sm:items-center sm:gap-5"
+      aria-label="Inspect user"
+    >
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
         Inspect user
       </div>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Select user to inspect">
-        {users.map((u) => {
+        {users.map((u, i) => {
           const selected = u.id === selectedUserId;
+          const idx = String(i + 1).padStart(2, "0");
           return (
             <button
               key={u.id}
@@ -22,17 +27,25 @@ export function UserSelector({ users, selectedUserId, onSelect }: UserSelectorPr
               onClick={() => onSelect(u.id)}
               aria-pressed={selected}
               className={
-                "rounded-full px-3 py-1 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 " +
+                "group inline-flex items-baseline gap-2 border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light " +
                 (selected
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700")
+                  ? "border-brand bg-brand text-ink"
+                  : "border-line bg-elevated/60 text-foreground hover:border-brand/40 hover:bg-elevated")
               }
             >
-              {u.name}
+              <span
+                className={
+                  "font-mono text-[10px] tabular-nums " +
+                  (selected ? "text-ink/70" : "text-muted")
+                }
+              >
+                {idx}
+              </span>
+              <span>{u.name}</span>
             </button>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }

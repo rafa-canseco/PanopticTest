@@ -54,6 +54,13 @@ export interface ActivityPoints {
   breakdown: PointsBreakdown;
 }
 
+export interface EnrichedActivity {
+  points: ActivityPoints;
+  qualityMultiplier: number;
+  campaignMultiplier: number;
+  churnMultiplier: number;
+}
+
 export interface UserPointsSummary {
   user: User;
   vaultPoints: number;
