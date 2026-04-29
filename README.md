@@ -1,6 +1,8 @@
 # HyperUnicorn Points
 
-HyperUnicorn Points is a mini points system for a hypothetical DeFi protocol where users can either deposit into managed vaults or create direct option-like positions using AMM liquidity.
+HyperUnicorn Points is a points system for a hypothetical DeFi protocol where users can either deposit into managed vaults or create direct option-like positions using AMM liquidity.
+
+**Live demo:** [hyperunicorn-points.vercel.app](https://hyperunicorn-points.vercel.app)
 
 **Goal:** show how a points program can reward meaningful protocol activity while reducing incentives for low-quality farming.
 
@@ -15,8 +17,8 @@ Daily Points = Active USD-days × Quality × Campaign × Churn
 ```
 
 - **Active USD-days:** capital over time. The base conversion is **1 point per $1 active for 1 full day**. Example: $10,000 active for 12 hours becomes `10,000 × 12 / 24 = 5,000` base points.
-- **Quality:** separates capital that is merely present from capital that is productive. Example: a lending vault dollar that is actually borrowed by traders should count more than a dollar sitting idle.
-- **Campaign:** capped seasonal boosts for protocol priorities. Example: Gamma Week boosts eligible gamma or long-vol activity that stays active for at least 12 hours.
+- **Quality:** separates capital that is merely present from capital that is productive. Example: an LP position that stays in-range and is borrowed by option buyers should count more than one parked out-of-range.
+- **Campaign:** capped seasonal boosts for protocol priorities like vault depth, volatility participation, or yield windows. Example: during Gamma Week, gamma-scalping and long-vol activity earn **1.30×** instead of **1.00×**, but only on rows that stay active at least 12 hours.
 - **Churn:** discounts short-lived farming behavior. Example: rapid open/close activity counts at **25%**, while vault-managed rebalancing is not treated as churn.
 
 The system separates **Vault Points** and **Trader Points** because vault users and direct traders create different kinds of value:
@@ -49,11 +51,9 @@ From there, the system is built in layers:
 3. **Apply capped seasonal boosts** for protocol priorities.
 4. **Discount short-lived farming** through a churn multiplier.
 
-This structure lets HyperUnicorn reward both vault users and direct traders without pretending they contribute in the same way. Vault users provide stable capital. Direct traders create market activity and take structured risk. Both matter, but both need quality filters.
+This structure lets HyperUnicorn reward both vault users and direct traders without pretending they contribute in the same way. Both matter, but both need quality filters.
 
 We also considered Panoptic-style behavior specifically. Gamma scalping and vault-managed rebalancing can involve frequent position updates, so the system avoids treating all movement as bad churn. The goal is to discount obvious open/close farming while preserving legitimate strategy maintenance.
-
-Finally, we intentionally kept reward redemption out of the implementation. In a production version, points could potentially convert into stable credits that users can claim or auto-compound back into vaults. That would turn points into a retention and liquidity flywheel instead of a one-time token distribution. For this assignment, the focus is the scoring model and dashboard clarity.
 
 ## Decisions
 
@@ -67,15 +67,7 @@ Finally, we intentionally kept reward redemption out of the implementation. In a
 
 Short-lived open/close activity only receives partial credit, but vault-managed rebalancing is not treated as churn. This matters because Panoptic-style gamma scalping can require frequent hedging or re-centering. The system should discourage low-quality farming, not penalize strategies that are active by design.
 
-## Why These Decisions
-
-I made these decisions to favor **long-term protocol health** over **short-term points farming**.
-
-A points system can easily become a game where users optimize for rewards without improving the product. I wanted the opposite: points should amplify behavior that already helps HyperUnicorn work better. More useful capital should improve vault capacity, market depth, trading availability, and strategy execution.
-
-The design borrows from what has worked in both DeFi and TradFi. From DeFi, I took the idea of seasons and clear campaign-based participation. From TradFi, I took the idea that not all liquidity is equally valuable: market maker programs reward liquidity quality, reliability, and usefulness, not just size.
-
-That is why the system rewards Active USD-days, quality, and capped seasonal boosts instead of raw TVL or raw volume. It should be understandable enough for users, strict enough to reduce obvious farming, and flexible enough for HyperUnicorn to direct incentives toward the parts of the protocol that need support.
+The broader motivation is to favor **long-term protocol health** over **short-term points farming**. Points should amplify behavior that already helps HyperUnicorn work better — more useful capital should improve vault capacity, market depth, trading availability, and strategy execution.
 
 ## Scoring Model
 
@@ -151,37 +143,25 @@ Churn discounts short-lived open/close behavior.
 
 Rows flagged as short-lived count at **25% of pre-churn points**, so three-quarters of those potential points do not count. **Vault-managed rebalances are exempt** because they can represent legitimate strategy maintenance, especially for gamma scalping.
 
-## Tradeoffs And Limitations
+## Tradeoffs
 
-**Simplicity vs. abuse resistance.** A very simple system like raw TVL or raw volume would be easy to explain, but it would also reward whales, churn, and low-quality farming. Adding quality, campaign, and churn multipliers makes the system more robust, but also more complex. I tried to offset that complexity with an explicit dashboard that shows how each component affects the final score.
-
-**Useful capital vs. beginner mistakes.** Out-of-range or low-quality activity earns fewer points, but it does not create negative points. A bad range selection may be inexperience, not abuse.
+**Simplicity vs. abuse resistance.** A very simple system like raw TVL or raw volume would be easy to explain, but it would also reward whales, churn, and low-quality farming. Adding quality, campaign, and churn multipliers makes the system more complex. I tried to offset that complexity with an explicit dashboard that shows how each component affects the final score.
 
 **Seasonal campaigns vs. predictability.** Campaigns help HyperUnicorn direct incentives toward moments that matter, such as volatility windows, new vault launches, or liquidity bootstrapping periods. But if campaigns are too frequent or arbitrary, they can feel like marketing rather than protocol design. I kept them capped and explicit.
 
-**Vault users vs. direct traders.** Vault users and direct traders create different kinds of value. Vault users provide stable capital, while direct traders create market activity and take structured risk. The dashboard separates Vault Points and Trader Points so the system does not pretend those behaviors are identical.
+## Limitations And Edge Cases
 
-**Anti-churn vs. legitimate rebalancing.** Gamma scalping and vault management may require frequent adjustments, so the model discounts short-lived farming behavior while excluding vault-managed rebalancing from that penalty.
+**Out-of-range activity** is more nuanced than it looks. In a simple LP system, out-of-range liquidity often means idle or less useful capital. In a Panoptic-style system, the user may be interacting with short LP exposure or option-like structures where the economic meaning is more complex. This demo compresses that nuance into a single useful capital ratio; a production system should distinguish between idle liquidity, valid short-LP exposure, and structured positions that are intentionally out of range.
 
-## Concerns And Edge Cases
+**Sybil resistance** is less central here because points are driven by capital-time and usefulness, not wallet count. Splitting activity across wallets should not improve the score by itself. It would become more important if rewards later introduced per-wallet caps, referrals, identity-based boosts, or a fixed token/revenue distribution.
 
-Out-of-range activity is more nuanced than it looks. In a simple LP system, out-of-range liquidity often means idle or less useful capital. In a Panoptic-style system, however, the user may be interacting with short LP exposure or option-like structures where the economic meaning is more complex. This demo handles that through a simple useful capital ratio, but a production system should distinguish between idle liquidity, valid short-LP exposure, and structured positions that are intentionally out of range.
+**Campaign timing** creates edge cases. Users may try to enter right before a campaign window or split activity into many small rows. To reduce this, campaign boosts require minimum active hours and are capped.
 
-Seasonal campaigns create timing edge cases. Users may try to enter right before a campaign window or split activity into many small rows. To reduce this, campaign boosts require minimum active hours and are capped.
+**The quality model is intentionally small.** A production version would combine utilization, fee generation, range width, strategy risk, position health, and market impact. This demo uses one useful capital ratio so the dashboard remains explainable.
 
-Sybil resistance is less central to the scoring model because points are driven by capital-time and usefulness, not wallet count. Splitting activity across wallets should not improve the score by itself. It would become more important if rewards introduced per-wallet caps, referrals, identity-based boosts, or a fixed token/revenue distribution.
+**Campaigns are static configs** with fixed dates and multipliers. In production, campaigns could be triggered by protocol metrics, governance, vault launches, market events, or liquidity needs.
 
-## Intentional Simplifications
-
-I intentionally simplified identity and Sybil resistance. The model scores capital-time and usefulness rather than wallet count, so splitting activity across wallets should not improve the score by itself. If rewards later introduced per-wallet caps, referrals, or fixed token distributions, Sybil resistance would become more important.
-
-I also simplified out-of-range liquidity. In a Panoptic-style system, out-of-range activity can represent different things depending on whether the user is an LP, short LP exposure, or part of a structured position. This demo compresses that nuance into a useful capital ratio.
-
-The quality model is intentionally small. A production version would likely combine utilization, fee generation, range width, strategy risk, position health, and market impact. This demo uses one useful capital ratio so the dashboard remains explainable.
-
-Campaigns are static configs with fixed dates and multipliers. In production, campaigns could be triggered by protocol metrics, governance, vault launches, market events, or liquidity needs.
-
-Finally, reward redemption is out of scope. Points do not convert into tokens, stable credits, revenue share, or vault deposits in this implementation.
+**Reward redemption is out of scope.** Points do not convert into tokens, stable credits, revenue share, or vault deposits in this implementation. In a production version, points could convert into stable credits that users can claim or auto-compound back into vaults — turning points into a retention and liquidity flywheel instead of a one-time token distribution.
 
 ## Future Improvements
 
@@ -205,11 +185,7 @@ The mock data lives in [`src/data`](./src/data):
 - [`campaigns.ts`](./src/data/campaigns.ts): three seasonal campaigns.
 - [`activities.ts`](./src/data/activities.ts): vault and trader activity rows across the season.
 
-The scoring logic consumes these files directly; dashboard values are not hardcoded.
-
-## Dashboard
-
-The dashboard is a user-facing scorecard for the points system. It shows each user's points, relative standing, and how their activity contributes to the final score.
+The scoring logic consumes these files directly.
 
 ## Running Locally
 
@@ -218,4 +194,4 @@ bun install
 bun run dev
 ```
 
-Then open [http://localhost:3000](http://localhost:3000).
+Then open [http://localhost:3000](http://localhost:3000), or use the [live demo](https://hyperunicorn-points.vercel.app).
