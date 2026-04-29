@@ -1,6 +1,7 @@
 import { CampaignEligibility } from "@/components/campaign-eligibility";
 import { ContributionBreakdown } from "@/components/contribution-breakdown";
 import { MyPointsCard } from "@/components/my-points-card";
+import { PointsTimeline } from "@/components/points-timeline";
 import { StandingCard } from "@/components/standing-card";
 import { TopActivities } from "@/components/top-activities";
 import { UserSelector } from "@/components/user-selector";
@@ -45,6 +46,13 @@ export function MyScoreTab({
 
       {/* Answer 3: how did the activity contribute */}
       <ContributionBreakdown summary={selected} />
+
+      {/* Season timeline — cumulative points over time per user */}
+      <PointsTimeline
+        userName={selected.user.name}
+        activities={enrichedActivities}
+        campaigns={campaigns}
+      />
 
       {/* Where points came from + which campaigns applied */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">

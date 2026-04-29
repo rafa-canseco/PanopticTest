@@ -101,14 +101,13 @@ export default function HomePage() {
 
       <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-10">
         <header className="mb-10 sm:mb-14">
-          {/* Display title */}
-          <div className="reveal reveal-2 flex items-end gap-5 sm:gap-7">
-            <ArcMark size={72} className="hidden sm:block" />
-            <ArcMark size={56} className="block sm:hidden" />
-            <h1 className="text-[44px] font-bold leading-[0.92] tracking-[-0.045em] text-ink sm:text-6xl lg:text-7xl">
-              HyperUnicorn
-              <br />
-              <span className="text-brand-light">Points.</span>
+          {/* Display title — single line on every viewport */}
+          <div className="reveal reveal-2 flex items-end gap-3 sm:gap-6">
+            <ArcMark size={40} className="shrink-0 sm:hidden" />
+            <ArcMark size={56} className="hidden shrink-0 sm:block lg:hidden" />
+            <ArcMark size={64} className="hidden shrink-0 lg:block" />
+            <h1 className="text-2xl font-bold leading-[0.95] tracking-[-0.03em] text-ink sm:text-5xl lg:text-6xl">
+              HyperUnicorn <span className="text-brand-light">Points.</span>
             </h1>
           </div>
 

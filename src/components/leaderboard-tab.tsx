@@ -1,4 +1,5 @@
 import { CampaignPanel } from "@/components/campaign-panel";
+import { FormulaCard } from "@/components/formula-card";
 import { Leaderboard } from "@/components/leaderboard";
 import type { Campaign, UserPointsSummary } from "@/lib/types";
 
@@ -19,6 +20,7 @@ export function LeaderboardTab({
     <div className="space-y-10">
       <Leaderboard ranked={ranked} selectedUserId={selectedUserId} onSelect={onInspectUser} />
       <CampaignPanel campaigns={campaigns} />
+      <FormulaCard />
     </div>
   );
 }

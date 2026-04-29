@@ -12,7 +12,13 @@ interface Stats {
   boosted: number;
 }
 
-type Tone = "boosted" | "partial" | "eligible-no-qualify" | "no-eligible";
+type Outcome = "earned" | "partial" | "missed-hours" | "wrong-strategy" | "no-activity";
+
+interface OutcomeView {
+  kind: Outcome;
+  badge: string;
+  detail: string;
+}
 
 function analyze(campaign: Campaign, activities: ActivityRow[]): Stats {
   const inWindow = activities.filter(
@@ -29,62 +35,69 @@ function analyze(campaign: Campaign, activities: ActivityRow[]): Stats {
   };
 }
 
-function describe(stats: Stats, campaign: Campaign): { tone: Tone; label: string; detail: string } {
-  if (stats.eligibleStrategy === 0) {
+function describe(stats: Stats, c: Campaign): OutcomeView {
+  if (stats.boosted > 0 && stats.boosted === stats.eligibleStrategy) {
     return {
-      tone: "no-eligible",
-      label: "Not boosted",
-      detail:
-        stats.inWindow === 0
-          ? "no activity in this campaign's window"
-          : "in-window activity wasn't on an eligible strategy",
+      kind: "earned",
+      badge: "Earned",
+      detail: `${stats.boosted} eligible row${stats.boosted === 1 ? "" : "s"} qualified — full boost claimed.`,
     };
   }
-  if (stats.boosted === 0) {
+  if (stats.boosted > 0) {
+    const missed = stats.eligibleStrategy - stats.boosted;
     return {
-      tone: "eligible-no-qualify",
-      label: "Eligible, no boost",
-      detail: `${stats.eligibleStrategy} eligible row${stats.eligibleStrategy === 1 ? "" : "s"}, all under the ${campaign.minActiveHours}h minimum`,
+      kind: "partial",
+      badge: `${stats.boosted} of ${stats.eligibleStrategy} earned`,
+      detail: `${missed} eligible row${missed === 1 ? "" : "s"} were under the ${c.minActiveHours}h minimum.`,
     };
   }
-  if (stats.boosted < stats.eligibleStrategy) {
+  if (stats.eligibleStrategy > 0) {
     return {
-      tone: "partial",
-      label: `${stats.boosted} of ${stats.eligibleStrategy} boosted`,
-      detail: `${stats.eligibleStrategy - stats.boosted} eligible row${stats.eligibleStrategy - stats.boosted === 1 ? "" : "s"} under the ${campaign.minActiveHours}h minimum`,
+      kind: "missed-hours",
+      badge: "Missed cutoff",
+      detail: `${stats.eligibleStrategy} eligible row${stats.eligibleStrategy === 1 ? " was" : "s were"} under the ${c.minActiveHours}h minimum. Hold longer to qualify.`,
+    };
+  }
+  if (stats.inWindow > 0) {
+    return {
+      kind: "wrong-strategy",
+      badge: "Didn't apply",
+      detail: `Activity in this window wasn't on an eligible strategy.`,
     };
   }
   return {
-    tone: "boosted",
-    label: `All ${stats.boosted} boosted`,
-    detail: `${campaign.eligibleStrategies.join(", ")} qualified during the window`,
+    kind: "no-activity",
+    badge: "Didn't apply",
+    detail: `No activity during this campaign window.`,
   };
 }
 
-function pillClass(tone: Tone): string {
-  const base = "rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] ";
-  switch (tone) {
-    case "boosted":
-      return base + "border-success/30 bg-success/10 text-success";
-    case "partial":
-      return base + "border-amber-400/30 bg-amber-400/10 text-amber-200";
-    case "eligible-no-qualify":
-      return base + "border-rose-400/30 bg-rose-400/10 text-rose-200";
-    case "no-eligible":
-      return base + "border-line bg-elevated text-muted";
-  }
-}
-
-function rail(tone: Tone): string {
-  switch (tone) {
-    case "boosted":
+function dotColor(o: Outcome): string {
+  switch (o) {
+    case "earned":
       return "bg-success";
     case "partial":
       return "bg-amber-400";
-    case "eligible-no-qualify":
+    case "missed-hours":
       return "bg-rose-400";
-    case "no-eligible":
+    case "wrong-strategy":
+    case "no-activity":
       return "bg-line";
+  }
+}
+
+function badgeClass(o: Outcome): string {
+  const base = "rounded-full border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] ";
+  switch (o) {
+    case "earned":
+      return base + "border-success/40 bg-success/10 text-success";
+    case "partial":
+      return base + "border-amber-400/40 bg-amber-400/10 text-amber-200";
+    case "missed-hours":
+      return base + "border-rose-400/40 bg-rose-400/10 text-rose-200";
+    case "wrong-strategy":
+    case "no-activity":
+      return base + "border-line bg-elevated text-muted";
   }
 }
 
@@ -97,33 +110,37 @@ export function CampaignEligibility({ campaigns, activities }: CampaignEligibili
     >
       <header className="border-b border-line px-6 py-5">
         <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
-          Section · Eligibility
+          Section · Campaigns
         </div>
         <h2 id="eligibility-heading" className="mt-1 text-lg font-bold tracking-tight text-ink">
-          Campaign matchups
+          Did campaigns boost your score?
         </h2>
         <p className="mt-2 text-sm text-muted">
-          Why this user did or didn&apos;t earn each campaign boost.
+          Each season runs targeted boosts. Here&apos;s whether your activity claimed each one.
         </p>
       </header>
       <ul className="divide-y divide-line">
-        {campaigns.map((c, i) => {
+        {campaigns.map((c) => {
           const stats = analyze(c, activities);
-          const { tone, label, detail } = describe(stats, c);
-          const index = String(i + 1).padStart(2, "0");
+          const view = describe(stats, c);
           return (
-            <li key={c.id} className="relative px-6 py-4">
-              <span aria-hidden className={`absolute left-0 top-3 h-[calc(100%-1.5rem)] w-[3px] ${rail(tone)}`} />
-              <div className="flex items-baseline gap-2">
-                <span className="font-mono text-[10px] text-line">{index}</span>
-                <h3 className="text-base font-bold tracking-tight text-ink">{c.name}</h3>
+            <li key={c.id} className="px-6 py-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <div className="flex items-baseline gap-2">
+                  <span
+                    aria-hidden
+                    className={`mr-1 inline-block h-2 w-2 rounded-full ${dotColor(view.kind)}`}
+                  />
+                  <h3 className="text-sm font-bold text-ink">{c.name}</h3>
+                  <span className="font-mono text-xs text-brand-light">
+                    {formatMultiplier(c.multiplier)}
+                  </span>
+                </div>
+                <span className={badgeClass(view.kind)}>{view.badge}</span>
               </div>
-              <div className="mt-2 flex items-center justify-between gap-2">
-                <p className="text-xs text-foreground">{detail}</p>
-                <span className={pillClass(tone)}>{label}</span>
-              </div>
-              <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
-                {formatMultiplier(c.multiplier)} · ≥{c.minActiveHours}h · {c.startDate} → {c.endDate}
+              <p className="mt-1.5 ml-5 text-xs text-foreground">{view.detail}</p>
+              <p className="mt-1 ml-5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+                ≥{c.minActiveHours}h · {c.startDate} → {c.endDate}
               </p>
             </li>
           );
