@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "points:check": "bun run src/lib/points.check.ts"
+    "points:check": "bun run src/lib/points.check.ts",
+    "format:check": "bun run src/lib/format.check.ts",
+    "check": "bun run lint && bunx tsc --noEmit && bun run points:check && bun run format:check"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
