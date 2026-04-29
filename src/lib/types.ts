@@ -21,6 +21,7 @@ export interface Campaign {
   startDate: string;
   endDate: string;
   multiplier: number;
+  minActiveHours: number;
   eligibleStrategies: Strategy[];
   description: string;
 }

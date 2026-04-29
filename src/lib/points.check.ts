@@ -4,9 +4,10 @@ import { users } from "@/data/users";
 import {
   aggregateUserPoints,
   calculateActivityPoints,
+  getCampaignMultiplier,
   getQualityMultiplier,
 } from "@/lib/points";
-import type { ActivityPoints } from "@/lib/types";
+import type { ActivityPoints, ActivityRow } from "@/lib/types";
 
 function approx(a: number, b: number): boolean {
   const tol = Math.max(1e-6, 1e-9 * Math.max(Math.abs(a), Math.abs(b)));
@@ -41,6 +42,31 @@ check(getQualityMultiplier(0.7) === 1.25, "quality boundary: exactly 0.70 -> 1.2
 check(getQualityMultiplier(0.89) === 1.25, "quality boundary: 0.89 -> 1.25x");
 check(getQualityMultiplier(0.9) === 1.5, "quality boundary: exactly 0.90 -> 1.5x");
 check(getQualityMultiplier(1.0) === 1.5, "quality boundary: 1.0 -> 1.5x");
+
+// 1b. minActiveHours gate: at exactly 12 hours the campaign applies; below
+//     12 it does not, even if the date and strategy match. Synthetic probes
+//     so the boundary is locked independent of the seed dataset.
+const probeBase: ActivityRow = {
+  id: "probe",
+  userId: "alice",
+  date: "2026-04-02",
+  category: "vault",
+  strategy: "lending-vault",
+  vaultType: "lending",
+  usdCapital: 100_000,
+  activeHours: 12,
+  usefulRatio: 0.75,
+  isShortLived: false,
+  isVaultManagedRebalance: false,
+};
+check(
+  getCampaignMultiplier(probeBase, campaigns) === 1.2,
+  "campaign should apply at exactly 12 active hours",
+);
+check(
+  getCampaignMultiplier({ ...probeBase, activeHours: 11.99 }, campaigns) === 1.0,
+  "campaign should NOT apply below 12 active hours",
+);
 
 // 2. Every activity's breakdown reconciles internally.
 for (const activity of activities) {
@@ -105,6 +131,15 @@ check(eveChurn.breakdown.churnDiscount > 0, "eve-1 churn discount should apply")
 check(
   approx(eveChurn.breakdown.finalPoints, eveChurn.breakdown.preChurnPoints * 0.25),
   "eve-1 churn multiplier should be 0.25",
+);
+
+// eve-2: gamma-scalping vault on 04-09 (inside Gamma Week, eligible strategy)
+// but only 3 active hours — below the 12h minActiveHours gate. The campaign
+// boost must NOT apply, before the churn multiplier discounts it.
+const eveShortGamma = findActivity("eve-2");
+check(
+  approx(eveShortGamma.breakdown.campaignUplift, 0),
+  "eve-2 must not get Gamma Week boost (3h < 12h minActiveHours)",
 );
 
 // 5. Persona narrative: Alice (steady, high quality) outranks Dave (whale,

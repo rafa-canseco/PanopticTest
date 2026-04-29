@@ -6,21 +6,45 @@ import type {
   Strategy,
   User,
   UserPointsSummary,
+  VaultType,
 } from "@/lib/types";
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
-const VAULT_STRATEGIES: ReadonlySet<Strategy> = new Set<Strategy>([
-  "lending-vault",
-  "covered-call-vault",
-  "gamma-scalping-vault",
-]);
+const VAULT_STRATEGY_TO_TYPE: Readonly<Partial<Record<Strategy, VaultType>>> = {
+  "lending-vault": "lending",
+  "covered-call-vault": "covered-call",
+  "gamma-scalping-vault": "gamma-scalping",
+};
+
+const VAULT_STRATEGIES: ReadonlySet<Strategy> = new Set(
+  Object.keys(VAULT_STRATEGY_TO_TYPE) as Strategy[],
+);
 
 const TRADER_STRATEGIES: ReadonlySet<Strategy> = new Set<Strategy>([
   "long-vol",
   "short-vol",
   "directional",
 ]);
+
+function collectVaultTypeErrors(a: ActivityRow): string[] {
+  const errors: string[] = [];
+  if (a.category === "vault") {
+    const expected = VAULT_STRATEGY_TO_TYPE[a.strategy];
+    if (a.vaultType === undefined) {
+      errors.push(
+        `vault row must declare vaultType${expected ? ` (expected "${expected}")` : ""}`,
+      );
+    } else if (expected !== undefined && a.vaultType !== expected) {
+      errors.push(
+        `vaultType "${a.vaultType}" inconsistent with strategy "${a.strategy}" (expected "${expected}")`,
+      );
+    }
+  } else if (a.vaultType !== undefined) {
+    errors.push(`trader row must not declare vaultType (got "${a.vaultType}")`);
+  }
+  return errors;
+}
 
 function isFiniteNonNegative(n: number): boolean {
   return Number.isFinite(n) && n >= 0;
@@ -58,6 +82,7 @@ function collectActivityErrors(
   if (!strategyOk) {
     errors.push(`category "${a.category}" inconsistent with strategy "${a.strategy}"`);
   }
+  errors.push(...collectVaultTypeErrors(a));
   if (a.isVaultManagedRebalance && a.category !== "vault") {
     errors.push(`isVaultManagedRebalance requires category="vault"`);
   }
@@ -73,6 +98,9 @@ function validateCampaign(c: Campaign): void {
   }
   if (!Number.isFinite(c.multiplier) || c.multiplier <= 0) {
     errors.push(`multiplier must be a positive finite number (got ${c.multiplier})`);
+  }
+  if (!Number.isFinite(c.minActiveHours) || c.minActiveHours < 0 || c.minActiveHours > 24) {
+    errors.push(`minActiveHours must be in [0, 24] (got ${c.minActiveHours})`);
   }
   if (c.eligibleStrategies.length === 0) {
     errors.push(`eligibleStrategies must not be empty`);
@@ -158,16 +186,24 @@ export function getQualityMultiplier(usefulRatio: number): number {
 }
 
 /**
- * Returns the campaign multiplier for the activity. Campaigns are required to
- * be non-overlapping on shared strategies (enforced by `validateInputs`), so at
- * most one campaign can match. Returns `1.0` when no campaign applies.
+ * Returns the campaign multiplier for the activity. Three conditions must
+ * hold: the activity date is inside the campaign window, its strategy is on
+ * the eligible list, and `activeHours >= campaign.minActiveHours`. The
+ * minimum-hours gate is the campaign-level anti-farming guard — short-lived
+ * rows are filtered before the multiplier is applied, not just discounted
+ * after the fact by the churn multiplier.
+ *
+ * Campaigns are required to be non-overlapping on shared strategies
+ * (enforced by `validateInputs`), so at most one campaign can match.
+ * Returns `1.0` when no campaign applies.
  */
 export function getCampaignMultiplier(activity: ActivityRow, campaigns: Campaign[]): number {
   for (const campaign of campaigns) {
     const inWindow =
       activity.date >= campaign.startDate && activity.date <= campaign.endDate;
     const eligible = campaign.eligibleStrategies.includes(activity.strategy);
-    if (inWindow && eligible) return campaign.multiplier;
+    const sufficient = activity.activeHours >= campaign.minActiveHours;
+    if (inWindow && eligible && sufficient) return campaign.multiplier;
   }
   return 1.0;
 }
