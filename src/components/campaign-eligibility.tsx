@@ -62,46 +62,69 @@ function describe(stats: Stats, campaign: Campaign): { tone: Tone; label: string
 }
 
 function pillClass(tone: Tone): string {
-  const base = "rounded-full px-2 py-0.5 text-xs font-medium ";
+  const base = "rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] ";
   switch (tone) {
     case "boosted":
-      return base + "bg-success/15 text-success";
+      return base + "border-success/30 bg-success/10 text-success";
     case "partial":
-      return base + "bg-amber-900/40 text-amber-200";
+      return base + "border-amber-400/30 bg-amber-400/10 text-amber-200";
     case "eligible-no-qualify":
-      return base + "bg-rose-900/40 text-rose-200";
+      return base + "border-rose-400/30 bg-rose-400/10 text-rose-200";
     case "no-eligible":
-      return base + "bg-elevated text-muted";
+      return base + "border-line bg-elevated text-muted";
+  }
+}
+
+function rail(tone: Tone): string {
+  switch (tone) {
+    case "boosted":
+      return "bg-success";
+    case "partial":
+      return "bg-amber-400";
+    case "eligible-no-qualify":
+      return "bg-rose-400";
+    case "no-eligible":
+      return "bg-line";
   }
 }
 
 export function CampaignEligibility({ campaigns, activities }: CampaignEligibilityProps) {
   return (
-    <div className="rounded-lg border border-line bg-surface">
-      <header className="border-b border-line px-4 py-3">
-        <h2 className="text-sm font-bold text-ink">Campaign eligibility</h2>
-        <p className="mt-0.5 text-xs text-muted">
+    <section className="border border-line bg-surface" aria-labelledby="eligibility-heading">
+      <header className="border-b border-line px-6 py-5">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+          Section · Eligibility
+        </div>
+        <h2 id="eligibility-heading" className="mt-1 text-lg font-bold tracking-tight text-ink">
+          Campaign matchups
+        </h2>
+        <p className="mt-2 text-sm text-muted">
           Why this user did or didn&apos;t earn each campaign boost.
         </p>
       </header>
       <ul className="divide-y divide-line">
-        {campaigns.map((c) => {
+        {campaigns.map((c, i) => {
           const stats = analyze(c, activities);
           const { tone, label, detail } = describe(stats, c);
+          const index = String(i + 1).padStart(2, "0");
           return (
-            <li key={c.id} className="px-4 py-3">
-              <div className="flex items-baseline justify-between gap-2">
-                <h3 className="text-sm font-medium text-ink">{c.name}</h3>
+            <li key={c.id} className="relative px-6 py-4">
+              <span aria-hidden className={`absolute left-0 top-3 h-[calc(100%-1.5rem)] w-[3px] ${rail(tone)}`} />
+              <div className="flex items-baseline gap-2">
+                <span className="font-mono text-[10px] text-line">{index}</span>
+                <h3 className="text-base font-bold tracking-tight text-ink">{c.name}</h3>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <p className="text-xs text-foreground">{detail}</p>
                 <span className={pillClass(tone)}>{label}</span>
               </div>
-              <p className="mt-1 text-xs text-foreground">{detail}</p>
-              <p className="mt-1 font-mono text-[11px] text-muted">
+              <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
                 {formatMultiplier(c.multiplier)} · ≥{c.minActiveHours}h · {c.startDate} → {c.endDate}
               </p>
             </li>
           );
         })}
       </ul>
-    </div>
+    </section>
   );
 }

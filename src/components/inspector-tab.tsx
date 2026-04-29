@@ -24,9 +24,9 @@ export function InspectorTab({
   campaigns,
 }: InspectorTabProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <UserSelector users={users} selectedUserId={selectedUserId} onSelect={onSelectUser} />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="lg:col-span-7">
           <BreakdownChain summary={selected} />
         </div>

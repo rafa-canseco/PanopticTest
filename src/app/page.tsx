@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 
 import { type EnrichedActivity } from "@/components/activity-table";
+import { ArcMark } from "@/components/arc-mark";
 import { InspectorTab } from "@/components/inspector-tab";
 import { OverviewTab } from "@/components/overview-tab";
-import { SimulatorTab } from "@/components/simulator-tab";
 import { Tabs } from "@/components/tabs";
 import { activities } from "@/data/activities";
 import { campaigns } from "@/data/campaigns";
@@ -18,7 +18,7 @@ import {
 } from "@/lib/points";
 import type { UserPointsSummary } from "@/lib/types";
 
-type TabId = "inspector" | "overview" | "simulator";
+type TabId = "inspector" | "overview";
 
 interface ComputeOk {
   kind: "ok";
@@ -63,6 +63,18 @@ function enrichActivities(summary: UserPointsSummary): EnrichedActivity[] {
     .sort((a, b) => a.points.activity.date.localeCompare(b.points.activity.date));
 }
 
+function deriveSeasonWindow(): { start: string; end: string } {
+  const start = campaigns.reduce(
+    (min, c) => (c.startDate < min ? c.startDate : min),
+    campaigns[0].startDate,
+  );
+  const end = campaigns.reduce(
+    (max, c) => (c.endDate > max ? c.endDate : max),
+    campaigns[0].endDate,
+  );
+  return { start, end };
+}
+
 export default function HomePage() {
   const result = useMemo(() => computeDashboard(), []);
   const ranked: UserPointsSummary[] = useMemo(
@@ -102,97 +114,98 @@ export default function HomePage() {
   }
 
   const selected = ranked.find((s) => s.user.id === selectedUserId) ?? ranked[0];
+  const season = deriveSeasonWindow();
 
   return (
-    <div className="min-h-screen font-sans text-foreground">
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <header className="mb-6 flex items-center gap-3">
-          <BrandMark />
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-              HyperUnicorn Points
-            </h1>
-            <p className="mt-1 text-sm text-muted">Useful capital, not raw activity.</p>
+    <div className="relative min-h-screen font-sans text-foreground">
+      {/* Hero radial glow — sits behind the header, fades into the bg */}
+      <div className="brand-glow pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px]" />
+
+      <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-10">
+        <header className="mb-10 sm:mb-14">
+          {/* Eyebrow — spec-sheet metadata */}
+          <div className="reveal reveal-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+            <span className="text-brand-light">●</span>
+            <span>Season 01</span>
+            <Sep />
+            <span>{season.start} → {season.end}</span>
+            <Sep />
+            <span>{users.length} users</span>
+            <Sep />
+            <span>{activities.length} activity rows</span>
+            <Sep />
+            <span>{campaigns.length} campaigns</span>
           </div>
+
+          {/* Display title */}
+          <div className="reveal reveal-2 mt-5 flex items-end gap-5 sm:gap-7">
+            <ArcMark size={72} className="hidden sm:block" />
+            <ArcMark size={56} className="block sm:hidden" />
+            <h1 className="text-[44px] font-bold leading-[0.92] tracking-[-0.045em] text-ink sm:text-6xl lg:text-7xl">
+              HyperUnicorn
+              <br />
+              <span className="text-brand-light">Points.</span>
+            </h1>
+          </div>
+
+          <p className="reveal reveal-3 mt-5 max-w-md text-base text-foreground sm:text-lg">
+            Useful capital, not raw activity.
+          </p>
+
+          <div className="reveal reveal-4 rule-fade mt-10" />
         </header>
 
-        <Tabs
-          tabs={[
-            {
-              id: "inspector",
-              label: "User Inspector",
-              panel: (
-                <InspectorTab
-                  users={users}
-                  selected={selected}
-                  selectedUserId={selected.user.id}
-                  onSelectUser={setSelectedUserId}
-                  enrichedActivities={enrichedActivities}
-                  userActivities={userActivities}
-                  campaigns={campaigns}
-                />
-              ),
-            },
-            {
-              id: "overview",
-              label: "Overview",
-              panel: (
-                <OverviewTab
-                  ranked={ranked}
-                  totals={result.totals}
-                  campaigns={campaigns}
-                  selectedUserId={selected.user.id}
-                  onInspectUser={handleInspectUser}
-                />
-              ),
-            },
-            {
-              id: "simulator",
-              label: "Simulator",
-              panel: <SimulatorTab campaigns={campaigns} />,
-            },
-          ]}
-          active={activeTab}
-          onChange={(id) => setActiveTab(id as TabId)}
-        />
+        <div className="reveal reveal-4">
+          <Tabs
+            tabs={[
+              {
+                id: "inspector",
+                label: "User Inspector",
+                panel: (
+                  <InspectorTab
+                    users={users}
+                    selected={selected}
+                    selectedUserId={selected.user.id}
+                    onSelectUser={setSelectedUserId}
+                    enrichedActivities={enrichedActivities}
+                    userActivities={userActivities}
+                    campaigns={campaigns}
+                  />
+                ),
+              },
+              {
+                id: "overview",
+                label: "Overview",
+                panel: (
+                  <OverviewTab
+                    ranked={ranked}
+                    totals={result.totals}
+                    campaigns={campaigns}
+                    selectedUserId={selected.user.id}
+                    onInspectUser={handleInspectUser}
+                  />
+                ),
+              },
+            ]}
+            active={activeTab}
+            onChange={(id) => setActiveTab(id as TabId)}
+          />
+        </div>
       </main>
     </div>
   );
 }
 
-function BrandMark() {
-  return (
-    <svg
-      role="img"
-      aria-label="Panoptic-inspired brand mark"
-      viewBox="0 0 64 64"
-      className="h-9 w-9 shrink-0"
-    >
-      <circle cx="32" cy="32" r="14" fill="none" stroke="#4e14d0" strokeWidth="6" />
-      <path
-        d="M14 14 A 24 24 0 0 0 14 50"
-        fill="none"
-        stroke="#4e14d0"
-        strokeWidth="6"
-        strokeLinecap="butt"
-      />
-      <path
-        d="M50 14 A 24 24 0 0 1 50 50"
-        fill="none"
-        stroke="#4e14d0"
-        strokeWidth="6"
-        strokeLinecap="butt"
-      />
-    </svg>
-  );
+function Sep() {
+  return <span className="text-line">/</span>;
 }
 
 function ErrorPanel({ title, message }: { title: string; message: string }) {
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="max-w-xl rounded-lg border border-line bg-surface p-6">
+      <div className="max-w-xl border border-line bg-surface p-6">
         <h1 className="text-lg font-bold text-ink">{title}</h1>
-        <pre className="mt-3 overflow-x-auto rounded bg-bg p-3 font-mono text-xs text-foreground">
+        <pre className="mt-3 overflow-x-auto bg-bg p-3 font-mono text-xs text-foreground">
           {message}
         </pre>
       </div>

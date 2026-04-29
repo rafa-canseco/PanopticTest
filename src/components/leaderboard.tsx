@@ -7,71 +7,113 @@ interface LeaderboardProps {
   onSelect: (userId: string) => void;
 }
 
+function categoryNote(s: UserPointsSummary): string {
+  if (s.vaultPoints > 0 && s.traderPoints > 0) return "vault + trader";
+  if (s.vaultPoints > 0) return "vault only";
+  if (s.traderPoints > 0) return "trader only";
+  return "no activity";
+}
+
 export function Leaderboard({ ranked, selectedUserId, onSelect }: LeaderboardProps) {
   return (
-    <div className="rounded-lg border border-line bg-surface">
-      <div className="flex items-center justify-between border-b border-line px-4 py-3">
-        <h2 className="text-sm font-bold text-ink">Leaderboard</h2>
-        <span className="text-xs text-muted" aria-hidden>
-          click or press Enter to inspect
+    <section
+      className="border border-line bg-surface"
+      aria-labelledby="leaderboard-heading"
+    >
+      <header className="flex items-baseline justify-between gap-3 border-b border-line px-6 py-4">
+        <div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+            Section · Leaderboard
+          </div>
+          <h2
+            id="leaderboard-heading"
+            className="mt-1 text-lg font-bold tracking-tight text-ink"
+          >
+            Ranked by total points
+          </h2>
+        </div>
+        <span className="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-muted sm:block">
+          ↵ activate to inspect
         </span>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <caption className="sr-only">
-            Users ranked by total points. Activate a row to inspect that user.
-          </caption>
-          <thead className="text-xs uppercase tracking-wide text-muted">
-            <tr className="border-b border-line">
-              <th scope="col" className="px-4 py-2 text-left font-medium">Rank</th>
-              <th scope="col" className="px-4 py-2 text-left font-medium">User</th>
-              <th scope="col" className="px-4 py-2 text-right font-medium">Vault</th>
-              <th scope="col" className="px-4 py-2 text-right font-medium">Trader</th>
-              <th scope="col" className="px-4 py-2 text-right font-medium">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ranked.map((s, i) => {
-              const selected = s.user.id === selectedUserId;
-              const handleActivate = () => onSelect(s.user.id);
-              return (
-                <tr
-                  key={s.user.id}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={selected}
-                  aria-label={`Inspect ${s.user.name}`}
-                  onClick={handleActivate}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleActivate();
-                    }
-                  }}
-                  className={
-                    "cursor-pointer border-b border-line transition-colors last:border-b-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-light " +
-                    (selected
-                      ? "bg-elevated"
-                      : "hover:bg-elevated/60")
+      </header>
+
+      <ul className="divide-y divide-line">
+        {ranked.map((s, i) => {
+          const selected = s.user.id === selectedUserId;
+          const handleActivate = () => onSelect(s.user.id);
+          const rank = String(i + 1).padStart(2, "0");
+          return (
+            <li key={s.user.id}>
+              <button
+                type="button"
+                onClick={handleActivate}
+                aria-pressed={selected}
+                aria-label={`Inspect ${s.user.name}`}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleActivate();
                   }
+                }}
+                className={
+                  "group relative flex w-full items-center gap-4 px-6 py-5 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-light sm:gap-6 sm:py-6 " +
+                  (selected ? "bg-elevated" : "hover:bg-elevated/50")
+                }
+              >
+                {selected ? (
+                  <span
+                    aria-hidden
+                    className="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-brand-light via-brand to-brand-light"
+                  />
+                ) : null}
+
+                {/* Rank — display numeric */}
+                <span
+                  className={
+                    "font-mono text-2xl font-bold tabular-nums leading-none sm:text-3xl " +
+                    (selected ? "text-brand-light" : "text-line")
+                  }
+                  aria-hidden
                 >
-                  <td className="px-4 py-2 tabular-nums text-muted">{i + 1}</td>
-                  <td className="px-4 py-2 font-medium text-ink">{s.user.name}</td>
-                  <td className="px-4 py-2 text-right tabular-nums text-foreground">
-                    {formatPoints(s.vaultPoints)}
-                  </td>
-                  <td className="px-4 py-2 text-right tabular-nums text-foreground">
+                  {rank}
+                </span>
+
+                {/* Name + segment label */}
+                <div className="min-w-0 flex-1">
+                  <div className="text-xl font-bold tracking-tight text-ink sm:text-2xl">
+                    {s.user.name}
+                  </div>
+                  <div className="mt-0.5 font-mono text-[11px] uppercase tracking-[0.18em] text-muted">
+                    {categoryNote(s)}
+                  </div>
+                </div>
+
+                {/* Vault / trader split — hide on mobile */}
+                <div className="hidden text-right md:block">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+                    Vault · Trader
+                  </div>
+                  <div className="mt-0.5 font-mono text-sm tabular-nums text-foreground">
+                    {formatPoints(s.vaultPoints)}{" "}
+                    <span className="text-line">·</span>{" "}
                     {formatPoints(s.traderPoints)}
-                  </td>
-                  <td className="px-4 py-2 text-right font-bold tabular-nums text-ink">
+                  </div>
+                </div>
+
+                {/* Total — display number */}
+                <div className="min-w-[110px] text-right sm:min-w-[160px]">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+                    Total
+                  </div>
+                  <div className="mt-0.5 text-2xl font-bold tabular-nums leading-none tracking-[-0.025em] text-ink sm:text-3xl">
                     {formatPoints(s.totalPoints)}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                  </div>
+                </div>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

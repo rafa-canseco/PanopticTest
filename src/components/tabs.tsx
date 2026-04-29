@@ -41,8 +41,9 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
         onKeyDown={handleKeyDown}
         className="flex gap-1 border-b border-line"
       >
-        {tabs.map((t) => {
+        {tabs.map((t, i) => {
           const selected = t.id === active;
+          const indexLabel = String(i + 1).padStart(2, "0");
           return (
             <button
               key={t.id}
@@ -54,13 +55,21 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
               tabIndex={selected ? 0 : -1}
               onClick={() => onChange(t.id)}
               className={
-                "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light " +
+                "group -mb-px flex items-baseline gap-2 border-b-2 px-2 py-3 text-sm font-medium uppercase tracking-[0.16em] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light sm:px-4 " +
                 (selected
                   ? "border-brand-light text-ink"
                   : "border-transparent text-muted hover:text-foreground")
               }
             >
-              {t.label}
+              <span
+                className={
+                  "font-mono text-[10px] tracking-normal " +
+                  (selected ? "text-brand-light" : "text-line")
+                }
+              >
+                {indexLabel}
+              </span>
+              <span>{t.label}</span>
             </button>
           );
         })}
@@ -73,7 +82,7 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
             role="tabpanel"
             id={`${baseId}-panel-${t.id}`}
             aria-labelledby={`${baseId}-tab-${t.id}`}
-            className="pt-6"
+            className="pt-8"
           >
             {t.panel}
           </div>

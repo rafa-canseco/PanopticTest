@@ -19,7 +19,7 @@ export function OverviewTab({
   onInspectUser,
 }: OverviewTabProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <MetricCards
         totalPoints={totals.totalPoints}
         vaultPoints={totals.vaultPoints}
