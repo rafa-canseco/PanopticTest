@@ -32,9 +32,9 @@ export function FormulaButton() {
         type="button"
         onClick={open}
         aria-label="View the points formula"
-        className="group inline-flex items-center gap-2 self-start border border-line bg-surface/60 px-3.5 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground transition-colors hover:border-brand/50 hover:bg-brand-soft hover:text-brand-light focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light"
+        className="group inline-flex items-center gap-2 self-start border border-brand-light/40 bg-brand-soft px-3.5 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-brand-light transition-colors hover:border-brand-light/80 hover:bg-brand/35 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light"
       >
-        <ArcMark size={14} variant="soft" className="shrink-0" />
+        <ArcMark size={14} variant="primary" className="shrink-0" />
         <span>The formula</span>
       </button>
 
