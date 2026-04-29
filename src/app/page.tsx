@@ -146,7 +146,18 @@ export default function HomePage() {
             <TourButton onBeforeStart={() => setActiveTab("my-score")} />
           </div>
 
-          <div className="reveal reveal-4 rule-fade mt-10" />
+          {/* Thesis line — three pillars of the formula */}
+          <div className="reveal reveal-4 mt-7 flex flex-wrap items-baseline gap-x-4 gap-y-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
+            <Pillar number="①" name="Capital" hint="time-weighted exposure" />
+            <span aria-hidden className="text-line">×</span>
+            <Pillar number="②" name="Efficiency" hint="productive utilization" />
+            <span aria-hidden className="text-line">×</span>
+            <Pillar number="③" name="Seasonal" hint="protocol-priority boosts" />
+            <span aria-hidden className="text-line">=</span>
+            <span className="text-foreground">Points</span>
+          </div>
+
+          <div className="reveal reveal-4 rule-fade mt-8" />
         </header>
 
         <div className="reveal reveal-4">
@@ -192,6 +203,16 @@ export default function HomePage() {
 
 function Sep() {
   return <span className="text-line">/</span>;
+}
+
+function Pillar({ number, name, hint }: { number: string; name: string; hint: string }) {
+  return (
+    <span className="inline-flex items-baseline gap-1.5">
+      <span className="text-brand-light">{number}</span>
+      <span className="text-foreground">{name}</span>
+      <span className="hidden text-muted sm:inline">· {hint}</span>
+    </span>
+  );
 }
 
 function ErrorPanel({ title, message }: { title: string; message: string }) {

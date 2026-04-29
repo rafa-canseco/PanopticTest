@@ -1,3 +1,4 @@
+import { formatPoints } from "@/lib/format";
 import type { UserPointsSummary } from "@/lib/types";
 
 interface StandingCardProps {
@@ -8,6 +9,12 @@ interface StandingCardProps {
 export function StandingCard({ summary, ranked }: StandingCardProps) {
   const rank = ranked.findIndex((r) => r.user.id === summary.user.id) + 1;
   const total = ranked.length;
+  const { breakdown } = summary;
+  const countedRate =
+    breakdown.preChurnPoints > 0
+      ? breakdown.finalPoints / breakdown.preChurnPoints
+      : 1;
+  const countedPct = Math.round(countedRate * 100);
 
   return (
     <section
@@ -26,6 +33,33 @@ export function StandingCard({ summary, ranked }: StandingCardProps) {
           of {total}
         </span>
       </div>
+
+      <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-line pt-4">
+        <div>
+          <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+            Activity volume
+          </dt>
+          <dd className="mt-1 flex items-baseline gap-1 font-mono tabular-nums">
+            <span className="text-base font-bold text-foreground">
+              {formatPoints(breakdown.basePoints)}
+            </span>
+            <span className="text-[10px] text-muted">USD-days</span>
+          </dd>
+        </div>
+        <div>
+          <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+            Counted
+          </dt>
+          <dd
+            className={
+              "mt-1 font-mono text-base font-bold tabular-nums " +
+              (countedPct === 100 ? "text-success" : "text-rose-300")
+            }
+          >
+            {countedPct}%
+          </dd>
+        </div>
+      </dl>
     </section>
   );
 }

@@ -13,7 +13,7 @@ const STEPS: DriveStep[] = [
     popover: {
       title: "How HyperUnicorn Points work",
       description:
-        "Points reward useful capital, not raw activity. Three things drive every score: <strong>how much capital</strong> you commit, <strong>how productive</strong> it stays, and <strong>whether the protocol needs it</strong> right now. Walk-through is ~30 seconds.",
+        "Points reward useful capital, not raw activity. The formula has three pillars:<br/><br/><strong>① Capital</strong> — how much you commit, time-weighted.<br/><strong>② Efficiency</strong> — how productive that capital stays.<br/><strong>③ Seasonal</strong> — boosts when the protocol needs it.<br/><br/>~30 seconds to walk through how each one shows up in your score.",
     },
   },
   {
