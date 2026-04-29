@@ -2,11 +2,10 @@
 
 import { useMemo, useState } from "react";
 
-import { ActivityTable, type EnrichedActivity } from "@/components/activity-table";
-import { CampaignPanel } from "@/components/campaign-panel";
-import { Leaderboard } from "@/components/leaderboard";
-import { MetricCards } from "@/components/metric-cards";
-import { UserBreakdown } from "@/components/user-breakdown";
+import { type EnrichedActivity } from "@/components/activity-table";
+import { InspectorTab } from "@/components/inspector-tab";
+import { OverviewTab } from "@/components/overview-tab";
+import { Tabs } from "@/components/tabs";
 import { activities } from "@/data/activities";
 import { campaigns } from "@/data/campaigns";
 import { users } from "@/data/users";
@@ -17,6 +16,8 @@ import {
   getQualityMultiplier,
 } from "@/lib/points";
 import type { UserPointsSummary } from "@/lib/types";
+
+type TabId = "overview" | "inspector";
 
 interface ComputeOk {
   kind: "ok";
@@ -62,27 +63,33 @@ function enrichActivities(summary: UserPointsSummary): EnrichedActivity[] {
 }
 
 export default function HomePage() {
-  // Aggregation runs once: deps are module constants. Rules of Hooks require
-  // every hook to be called unconditionally on every render, so we collect
-  // results into a tagged union and branch only when rendering.
   const result = useMemo(() => computeDashboard(), []);
-
   const ranked: UserPointsSummary[] = useMemo(
     () => (result.kind === "ok" ? result.ranked : []),
     [result],
   );
+
   const initialUserId = ranked[0]?.user.id ?? "";
   const [selectedUserId, setSelectedUserId] = useState(initialUserId);
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
 
   const enrichedActivities = useMemo<EnrichedActivity[]>(() => {
     const sel = ranked.find((s) => s.user.id === selectedUserId);
     return sel ? enrichActivities(sel) : [];
   }, [ranked, selectedUserId]);
 
+  const userActivities = useMemo(
+    () => activities.filter((a) => a.userId === selectedUserId),
+    [selectedUserId],
+  );
+
+  const handleInspectUser = (userId: string): void => {
+    setSelectedUserId(userId);
+    setActiveTab("inspector");
+  };
+
   if (result.kind === "error") {
-    return (
-      <ErrorPanel title="Points engine rejected the input data" message={result.message} />
-    );
+    return <ErrorPanel title="Points engine rejected the input data" message={result.message} />;
   }
   if (ranked.length === 0) {
     return (
@@ -93,8 +100,7 @@ export default function HomePage() {
     );
   }
 
-  const selected =
-    ranked.find((s) => s.user.id === selectedUserId) ?? ranked[0];
+  const selected = ranked.find((s) => s.user.id === selectedUserId) ?? ranked[0];
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
@@ -108,37 +114,42 @@ export default function HomePage() {
           </p>
         </header>
 
-        <section className="mb-6">
-          <MetricCards
-            totalPoints={result.totals.totalPoints}
-            vaultPoints={result.totals.vaultPoints}
-            traderPoints={result.totals.traderPoints}
-            activeCampaigns={campaigns.length}
-          />
-        </section>
+        <Tabs
+          tabs={[
+            {
+              id: "overview",
+              label: "Overview",
+              panel: (
+                <OverviewTab
+                  ranked={ranked}
+                  totals={result.totals}
+                  campaigns={campaigns}
+                  selectedUserId={selected.user.id}
+                  onInspectUser={handleInspectUser}
+                />
+              ),
+            },
+            {
+              id: "inspector",
+              label: "User Inspector",
+              panel: (
+                <InspectorTab
+                  users={users}
+                  selected={selected}
+                  selectedUserId={selected.user.id}
+                  onSelectUser={setSelectedUserId}
+                  enrichedActivities={enrichedActivities}
+                  userActivities={userActivities}
+                  campaigns={campaigns}
+                />
+              ),
+            },
+          ]}
+          active={activeTab}
+          onChange={(id) => setActiveTab(id as TabId)}
+        />
 
-        <section className="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <div className="lg:col-span-7">
-            <Leaderboard
-              ranked={ranked}
-              selectedUserId={selected.user.id}
-              onSelect={setSelectedUserId}
-            />
-          </div>
-          <div className="lg:col-span-5">
-            <UserBreakdown summary={selected} />
-          </div>
-        </section>
-
-        <section className="mb-6">
-          <CampaignPanel campaigns={campaigns} />
-        </section>
-
-        <section className="mb-6">
-          <ActivityTable userName={selected.user.name} activities={enrichedActivities} />
-        </section>
-
-        <footer className="pt-4 text-xs text-zinc-500 dark:text-zinc-500">
+        <footer className="pt-6 text-xs text-zinc-500 dark:text-zinc-500">
           All points computed live from <code className="font-mono">aggregateUserPoints</code>.
           No values are hardcoded.
         </footer>
