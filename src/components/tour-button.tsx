@@ -4,22 +4,24 @@ import { driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
 import { useCallback, useEffect } from "react";
 
+import { ArcMark } from "@/components/arc-mark";
+
 const TOUR_FLAG = "hu-tour-seen";
 
 const STEPS: DriveStep[] = [
   {
     popover: {
-      title: "HyperUnicorn Points",
+      title: "How HyperUnicorn Points work",
       description:
-        "This dashboard answers three questions about your score. Let me walk you through each one — about 30 seconds.",
+        "Points reward useful capital, not raw activity. Three things drive every score: <strong>how much capital</strong> you commit, <strong>how productive</strong> it stays, and <strong>whether the protocol needs it</strong> right now. Walk-through is ~30 seconds.",
     },
   },
   {
     element: '[data-tour="user-selector"]',
     popover: {
-      title: "Pick a user",
+      title: "5 mock users, 5 patterns",
       description:
-        "Switch between mock users to see their score. Each one tells a different story — high quality, low utilization, churned activity, and so on.",
+        "Switch users to compare behaviors against the same formula: steady vault deposits, idle whale capital, short-lived churn, focused trading, mixed activity. Same math, very different totals.",
       side: "bottom",
       align: "start",
     },
@@ -27,9 +29,9 @@ const STEPS: DriveStep[] = [
   {
     element: '[data-tour="my-points"]',
     popover: {
-      title: "Q1 — How many points?",
+      title: "Where points come from",
       description:
-        "Your total for the season, broken down into points earned from vault deposits and direct trading.",
+        "Every activity row earns points individually, then they sum up. The total splits two ways:<br/><br/><strong>Vault points</strong> — capital deposited into strategy vaults (Lending, Covered Call, Gamma Scalping). The vault manages it for you.<br/><br/><strong>Trader points</strong> — positions you open and run directly.<br/><br/>Both paths use the exact same formula.",
       side: "right",
       align: "start",
     },
@@ -37,8 +39,9 @@ const STEPS: DriveStep[] = [
   {
     element: '[data-tour="my-standing"]',
     popover: {
-      title: "Q2 — Where do I stand?",
-      description: "Your rank in the season — out of all users with activity.",
+      title: "Your rank in the season",
+      description:
+        "Where this user lands among everyone scoring the same season. Useful as relative context — your absolute score still depends on the formula below.",
       side: "left",
       align: "start",
     },
@@ -46,9 +49,9 @@ const STEPS: DriveStep[] = [
   {
     element: '[data-tour="contribution"]',
     popover: {
-      title: "Q3 — Why this score?",
+      title: "Anatomy of a score",
       description:
-        "Your base activity flows through quality, campaign, and churn. Each line is either points earned or potential points not counted — never negative points.",
+        "Each row of activity goes through a four-stage chain.<br/><br/><strong>① Base activity</strong> = capital × hours / 24 → time-weighted USD-days. Capital active longer → more points.<br/><br/><strong>② Quality</strong> 0.5× to 1.5× — rewards productive utilization (in-range, fee-generating, balancing the market). Below baseline becomes <em>potential not counted</em>.<br/><br/><strong>③ Campaign boost</strong> +1.2× to 1.3× — only when the activity is in a campaign window, on an eligible strategy, and ≥12h active.<br/><br/><strong>④ Churn protection</strong> — short-lived rows count at 25%. Quick open/close farming gets discounted, not rewarded.",
       side: "top",
       align: "start",
     },
@@ -56,9 +59,9 @@ const STEPS: DriveStep[] = [
   {
     element: '[data-tour="top-activities"]',
     popover: {
-      title: "Where points came from",
+      title: "The rows that actually paid",
       description:
-        "The top contributing rows for this user, ranked by final points. Capital, hours, and useful ratio appear inline so you can read the story.",
+        "Each row shows what fed the formula — capital, hours active, useful ratio. The number on the right is the row's <em>final</em> points: capital × hours × quality × campaign × churn, all together.",
       side: "top",
       align: "start",
     },
@@ -66,9 +69,9 @@ const STEPS: DriveStep[] = [
   {
     element: '[data-tour="eligibility"]',
     popover: {
-      title: "Campaign matchups",
+      title: "Why some campaigns boosted (and some didn't)",
       description:
-        "For each season campaign, see whether the user qualified, partially qualified, or didn't — and why. The minimum-active-hours rule shows up here.",
+        "Campaigns reward protocol priorities — Lending Sprint for vault depth, Gamma Week for volatility, Covered Call Yield Week for short-vol yield. To earn the boost, an activity needs all three: <strong>date inside the window</strong>, <strong>eligible strategy</strong>, and <strong>≥12h active hours</strong>. Miss any one and the multiplier doesn't apply.",
       side: "left",
       align: "start",
     },
@@ -76,18 +79,18 @@ const STEPS: DriveStep[] = [
   {
     element: '[data-tour="tabs"]',
     popover: {
-      title: "Switch to Leaderboard",
+      title: "Compare against everyone",
       description:
-        "The second tab gives you the full ranking of all users plus the active campaign cards.",
+        "The Leaderboard tab shows all five users ranked, plus the active campaign cards in detail (windows, multipliers, eligible strategies, minimum hours).",
       side: "bottom",
       align: "center",
     },
   },
   {
     popover: {
-      title: "You're set",
+      title: "That's the formula",
       description:
-        "Everything you saw is computed live from the points engine — no hardcoded values. Replay the tour anytime from the header.",
+        "<strong>More capital × more time × more useful = more points.</strong> Each piece on screen is computed live from the engine — no hardcoded values. Replay this anytime from the header.",
     },
   },
 ];
@@ -100,8 +103,6 @@ interface TourButtonProps {
 export function TourButton({ onBeforeStart }: TourButtonProps) {
   const start = useCallback(() => {
     onBeforeStart?.();
-    // Two RAFs to ensure React has flushed any tab change before the
-    // driver tries to highlight elements that only render in that tab.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const drv = driver({
@@ -109,7 +110,7 @@ export function TourButton({ onBeforeStart }: TourButtonProps) {
           progressText: "{{current}} / {{total}}",
           nextBtnText: "Next →",
           prevBtnText: "← Back",
-          doneBtnText: "Done",
+          doneBtnText: "Got it",
           steps: STEPS,
           onDestroyed: () => {
             try {
@@ -131,7 +132,7 @@ export function TourButton({ onBeforeStart }: TourButtonProps) {
     try {
       seen = localStorage.getItem(TOUR_FLAG) === "1";
     } catch {
-      seen = true; // pretend seen if we can't read storage
+      seen = true;
     }
     if (seen) return;
     const timer = setTimeout(start, 700);
@@ -142,13 +143,18 @@ export function TourButton({ onBeforeStart }: TourButtonProps) {
     <button
       type="button"
       onClick={start}
-      className="group inline-flex items-center gap-2 self-start border border-line bg-surface/60 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted transition-colors hover:border-brand/50 hover:bg-brand-soft hover:text-brand-light focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light"
-      aria-label="Replay the dashboard tour"
+      aria-label="Learn how points are calculated"
+      className="tour-glow group inline-flex items-center gap-2.5 self-start border border-brand-light bg-gradient-to-r from-brand to-brand-light px-4 py-2.5 text-sm font-medium text-ink transition-all duration-200 hover:from-brand-light hover:to-brand-light focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
     >
-      <span aria-hidden className="text-brand-light">
-        ●
+      <ArcMark
+        size={18}
+        variant="ink"
+        className="shrink-0 transition-transform duration-300 group-hover:rotate-[20deg]"
+      />
+      <span className="tracking-tight">How are points calculated?</span>
+      <span aria-hidden className="font-mono text-xs text-ink/70 transition-transform group-hover:translate-x-0.5">
+        →
       </span>
-      <span>Take the tour</span>
     </button>
   );
 }

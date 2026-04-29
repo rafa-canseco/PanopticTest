@@ -1,14 +1,22 @@
 interface ArcMarkProps {
   size?: number;
   className?: string;
-  // The two outer arcs can be muted to a softer purple while the inner ring
-  // stays brand strength — useful as a decorative element rather than a logo.
-  variant?: "primary" | "soft";
+  /**
+   * - primary: full brand purple, used as the hero mark
+   * - soft: brand purple inner ring with translucent outer arcs (decoration)
+   * - ink: solid white — used on top of the brand-purple background
+   */
+  variant?: "primary" | "soft" | "ink";
 }
 
 export function ArcMark({ size = 56, className = "", variant = "primary" }: ArcMarkProps) {
-  const inner = "#4e14d0";
-  const outer = variant === "soft" ? "rgba(78, 20, 208, 0.45)" : "#4e14d0";
+  const inner = variant === "ink" ? "#ffffff" : "#4e14d0";
+  const outer =
+    variant === "ink"
+      ? "#ffffff"
+      : variant === "soft"
+        ? "rgba(78, 20, 208, 0.45)"
+        : "#4e14d0";
   const stroke = size * 0.115;
   return (
     <svg
