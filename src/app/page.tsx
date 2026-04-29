@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 
 import { type EnrichedActivity } from "@/components/activity-table";
 import { ArcMark } from "@/components/arc-mark";
-import { InspectorTab } from "@/components/inspector-tab";
-import { OverviewTab } from "@/components/overview-tab";
+import { LeaderboardTab } from "@/components/leaderboard-tab";
+import { MyScoreTab } from "@/components/my-score-tab";
 import { Tabs } from "@/components/tabs";
 import { activities } from "@/data/activities";
 import { campaigns } from "@/data/campaigns";
@@ -18,12 +18,11 @@ import {
 } from "@/lib/points";
 import type { UserPointsSummary } from "@/lib/types";
 
-type TabId = "inspector" | "overview";
+type TabId = "my-score" | "leaderboard";
 
 interface ComputeOk {
   kind: "ok";
   ranked: UserPointsSummary[];
-  totals: { totalPoints: number; vaultPoints: number; traderPoints: number };
 }
 
 interface ComputeError {
@@ -38,15 +37,7 @@ function computeDashboard(): ComputeOk | ComputeError {
       (a, b) =>
         b.totalPoints - a.totalPoints || a.user.id.localeCompare(b.user.id),
     );
-    let totalPoints = 0;
-    let vaultPoints = 0;
-    let traderPoints = 0;
-    for (const s of summaries) {
-      totalPoints += s.totalPoints;
-      vaultPoints += s.vaultPoints;
-      traderPoints += s.traderPoints;
-    }
-    return { kind: "ok", ranked, totals: { totalPoints, vaultPoints, traderPoints } };
+    return { kind: "ok", ranked };
   } catch (err) {
     return { kind: "error", message: err instanceof Error ? err.message : String(err) };
   }
@@ -84,7 +75,7 @@ export default function HomePage() {
 
   const initialUserId = ranked[0]?.user.id ?? "";
   const [selectedUserId, setSelectedUserId] = useState(initialUserId);
-  const [activeTab, setActiveTab] = useState<TabId>("inspector");
+  const [activeTab, setActiveTab] = useState<TabId>("my-score");
 
   const enrichedActivities = useMemo<EnrichedActivity[]>(() => {
     const sel = ranked.find((s) => s.user.id === selectedUserId);
@@ -98,7 +89,7 @@ export default function HomePage() {
 
   const handleInspectUser = (userId: string): void => {
     setSelectedUserId(userId);
-    setActiveTab("inspector");
+    setActiveTab("my-score");
   };
 
   if (result.kind === "error") {
@@ -159,12 +150,13 @@ export default function HomePage() {
           <Tabs
             tabs={[
               {
-                id: "inspector",
-                label: "User Inspector",
+                id: "my-score",
+                label: "My Score",
                 panel: (
-                  <InspectorTab
+                  <MyScoreTab
                     users={users}
                     selected={selected}
+                    ranked={ranked}
                     selectedUserId={selected.user.id}
                     onSelectUser={setSelectedUserId}
                     enrichedActivities={enrichedActivities}
@@ -174,12 +166,11 @@ export default function HomePage() {
                 ),
               },
               {
-                id: "overview",
-                label: "Overview",
+                id: "leaderboard",
+                label: "Leaderboard",
                 panel: (
-                  <OverviewTab
+                  <LeaderboardTab
                     ranked={ranked}
-                    totals={result.totals}
                     campaigns={campaigns}
                     selectedUserId={selected.user.id}
                     onInspectUser={handleInspectUser}
