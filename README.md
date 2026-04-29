@@ -195,3 +195,11 @@ bun run dev
 ```
 
 Then open [http://localhost:3000](http://localhost:3000), or use the [live demo](https://hyperunicorn-points.vercel.app).
+
+To validate the codebase end-to-end:
+
+```bash
+bun run check
+```
+
+This runs ESLint, `tsc --noEmit`, and three runnable check scripts that pin the engine, formatters, and narrative generator against fixtures (`src/lib/{points,format,narrative}.check.ts`).
