@@ -1,5 +1,5 @@
-import type { EnrichedActivity } from "@/components/activity-table";
 import { formatHours, formatPoints, formatUsd } from "@/lib/format";
+import type { EnrichedActivity } from "@/lib/types";
 
 interface TopActivitiesProps {
   activities: EnrichedActivity[];

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 
-import { type EnrichedActivity } from "@/components/activity-table";
 import { ArcMark } from "@/components/arc-mark";
 import { LeaderboardTab } from "@/components/leaderboard-tab";
 import { MyScoreTab } from "@/components/my-score-tab";
@@ -16,7 +15,7 @@ import {
   getChurnMultiplier,
   getQualityMultiplier,
 } from "@/lib/points";
-import type { UserPointsSummary } from "@/lib/types";
+import type { EnrichedActivity, UserPointsSummary } from "@/lib/types";
 
 type TabId = "my-score" | "leaderboard";
 

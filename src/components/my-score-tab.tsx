@@ -1,11 +1,16 @@
-import { type EnrichedActivity } from "@/components/activity-table";
 import { CampaignEligibility } from "@/components/campaign-eligibility";
 import { ContributionBreakdown } from "@/components/contribution-breakdown";
 import { MyPointsCard } from "@/components/my-points-card";
 import { StandingCard } from "@/components/standing-card";
 import { TopActivities } from "@/components/top-activities";
 import { UserSelector } from "@/components/user-selector";
-import type { ActivityRow, Campaign, User, UserPointsSummary } from "@/lib/types";
+import type {
+  ActivityRow,
+  Campaign,
+  EnrichedActivity,
+  User,
+  UserPointsSummary,
+} from "@/lib/types";
 
 interface MyScoreTabProps {
   users: User[];
