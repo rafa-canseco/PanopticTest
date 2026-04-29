@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "points:check": "bun run src/lib/points.check.ts"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
