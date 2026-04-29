@@ -14,17 +14,7 @@ const STEPS: DriveStep[] = [
     popover: {
       title: "How HyperUnicorn Points work",
       description:
-        "Points reward useful capital, not raw activity. The formula has four pillars:<br/><br/><strong>① Capital</strong> — how much you commit, time-weighted.<br/><strong>② Efficiency</strong> — how productive that capital stays.<br/><strong>③ Seasonal</strong> — boosts when the protocol needs it.<br/><strong>④ Anti-churn</strong> — short-lived activity is discounted (farming protection).<br/><br/>~30 seconds to walk through how each one shows up in your score.",
-    },
-  },
-  {
-    element: '[data-tour="user-selector"]',
-    popover: {
-      title: "5 mock users, 5 patterns",
-      description:
-        "Switch users to compare behaviors against the same formula: steady vault deposits, idle whale capital, short-lived churn, focused trading, mixed activity. Same math, very different totals.",
-      side: "bottom",
-      align: "start",
+        "Points reward <strong>useful</strong> capital, not raw activity. Four pillars drive every score:<br/><br/><strong>① Capital</strong> — how much, time-weighted.<br/><strong>② Efficiency</strong> — how productive.<br/><strong>③ Seasonal</strong> — protocol-priority boosts.<br/><strong>④ Anti-churn</strong> — farming protection.",
     },
   },
   {
@@ -32,7 +22,7 @@ const STEPS: DriveStep[] = [
     popover: {
       title: "Where points come from",
       description:
-        "Every activity row earns points individually, then they sum up. The total splits two ways:<br/><br/><strong>Vault points</strong> — capital deposited into strategy vaults (Lending, Covered Call, Gamma Scalping). The vault manages it for you.<br/><br/><strong>Trader points</strong> — positions you open and run directly.<br/><br/>Both paths use the exact same formula.",
+        "<strong>Vault points</strong> — capital deposited into a strategy vault (Lending, Covered Call, Gamma Scalping).<br/><br/><strong>Trader points</strong> — positions you run directly.<br/><br/>Both use the same formula.",
       side: "right",
       align: "start",
     },
@@ -42,7 +32,7 @@ const STEPS: DriveStep[] = [
     popover: {
       title: "Your rank in the season",
       description:
-        "Where this user lands among everyone scoring the same season. Useful as relative context — your absolute score still depends on the formula below.",
+        "Relative context only — the formula below decides the absolute score.",
       side: "left",
       align: "start",
     },
@@ -52,7 +42,7 @@ const STEPS: DriveStep[] = [
     popover: {
       title: "Anatomy of a score",
       description:
-        "Each row of activity goes through a four-stage chain.<br/><br/><strong>① Base activity</strong> = capital × hours / 24 → time-weighted USD-days. Capital active longer → more points.<br/><br/><strong>② Quality</strong> 0.5× to 1.5× — rewards productive utilization (in-range, fee-generating, balancing the market). Below baseline becomes <em>potential not counted</em>.<br/><br/><strong>③ Campaign boost</strong> +1.2× to 1.3× — only when the activity is in a campaign window, on an eligible strategy, and ≥12h active.<br/><br/><strong>④ Churn protection</strong> — short-lived rows count at 25%. Quick open/close farming gets discounted, not rewarded.",
+        "Four stages, applied per row:<br/><br/><strong>① Base</strong> = capital × hours / 24 (USD-days).<br/><strong>② Quality</strong> 0.5×–1.5× — productive utilization. Below baseline → not counted.<br/><strong>③ Campaign</strong> 1.2×–1.3× — needs window + eligible strategy + ≥12h.<br/><strong>④ Churn</strong> — short-lived rows count at 25%.",
       side: "top",
       align: "start",
     },
@@ -62,7 +52,7 @@ const STEPS: DriveStep[] = [
     popover: {
       title: "The rows that actually paid",
       description:
-        "Each row shows what fed the formula — capital, hours active, useful ratio. The number on the right is the row's <em>final</em> points: capital × hours × quality × campaign × churn, all together.",
+        "Inputs on top (capital, hours, useful%), final points on the right after the full chain. Hover any underlined value for its definition.",
       side: "top",
       align: "start",
     },
@@ -70,9 +60,9 @@ const STEPS: DriveStep[] = [
   {
     element: '[data-tour="eligibility"]',
     popover: {
-      title: "Why some campaigns boosted (and some didn't)",
+      title: "Why campaigns boost (or don't)",
       description:
-        "Campaigns reward protocol priorities — Lending Sprint for vault depth, Gamma Week for volatility, Covered Call Yield Week for short-vol yield. To earn the boost, an activity needs all three: <strong>date inside the window</strong>, <strong>eligible strategy</strong>, and <strong>≥12h active hours</strong>. Miss any one and the multiplier doesn't apply.",
+        "A row earns the boost only when <strong>all three</strong> hold: window match, eligible strategy, and ≥12h active. Miss any one — no multiplier.",
       side: "left",
       align: "start",
     },
@@ -82,7 +72,7 @@ const STEPS: DriveStep[] = [
     popover: {
       title: "Compare against everyone",
       description:
-        "The Leaderboard tab shows all five users ranked, plus the active campaign cards in detail (windows, multipliers, eligible strategies, minimum hours).",
+        "The Leaderboard tab has the full ranking and the campaign cards with their windows, multipliers, and minimum hours.",
       side: "bottom",
       align: "center",
     },
@@ -91,7 +81,7 @@ const STEPS: DriveStep[] = [
     popover: {
       title: "That's the formula",
       description:
-        "<strong>More capital × more time × more useful = more points.</strong> Each piece on screen is computed live from the engine — no hardcoded values. Replay this anytime from the header.",
+        "<strong>More capital × more time × more useful = more points.</strong> Everything on screen is computed live. Replay anytime from the header.",
     },
   },
 ];
