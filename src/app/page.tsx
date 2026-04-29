@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { ArcMark } from "@/components/arc-mark";
+import { FormulaButton } from "@/components/formula-button";
 import { LeaderboardTab } from "@/components/leaderboard-tab";
 import { MyScoreTab } from "@/components/my-score-tab";
 import { Tabs } from "@/components/tabs";
@@ -111,11 +112,12 @@ export default function HomePage() {
             </h1>
           </div>
 
-          <div className="reveal reveal-3 mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-            <p className="max-w-md text-base text-foreground sm:text-lg">
+          <div className="reveal reveal-3 mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-3">
+            <p className="max-w-md text-base text-foreground sm:text-lg sm:mr-3">
               Useful capital, not raw activity.
             </p>
             <TourButton onBeforeStart={() => setActiveTab("my-score")} />
+            <FormulaButton />
           </div>
 
           <div className="reveal reveal-4 rule-fade mt-10" />

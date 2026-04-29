@@ -44,3 +44,30 @@ export function formatPercent(ratio: number): string {
   if (!Number.isFinite(ratio)) return "—";
   return `${Math.round(ratio * 100)}%`;
 }
+
+const SHORT_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+export function formatShortDate(iso: string): string {
+  if (!ISO_DATE.test(iso)) return "—";
+  const [, monthStr, dayStr] = iso.split("-");
+  const monthIdx = Number(monthStr) - 1;
+  const day = Number(dayStr);
+  if (monthIdx < 0 || monthIdx > 11) return "—";
+  return `${SHORT_MONTHS[monthIdx]} ${day}`;
+}
+
+const STRATEGY_LABELS: Record<string, string> = {
+  "lending-vault": "Lending Vault",
+  "covered-call-vault": "Covered Call Vault",
+  "gamma-scalping-vault": "Gamma Scalping Vault",
+  "long-vol": "Long Volatility",
+  "short-vol": "Short Volatility",
+  directional: "Directional",
+};
+
+export function formatStrategy(strategy: string): string {
+  return STRATEGY_LABELS[strategy] ?? strategy;
+}

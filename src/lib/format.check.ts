@@ -4,7 +4,9 @@ import {
   formatMultiplier,
   formatPercent,
   formatPoints,
+  formatShortDate,
   formatSignedPoints,
+  formatStrategy,
   formatUsd,
 } from "@/lib/format";
 
@@ -84,5 +86,16 @@ check(formatPercent(0), "0%", "formatPercent(0)");
 check(formatPercent(0.75), "75%", "formatPercent(0.75)");
 check(formatPercent(1), "100%", "formatPercent(1)");
 check(formatPercent(NaN), "—", "formatPercent(NaN)");
+
+// formatShortDate
+check(formatShortDate("2026-04-09"), "Apr 9", "formatShortDate Apr 9");
+check(formatShortDate("2026-12-31"), "Dec 31", "formatShortDate Dec 31");
+check(formatShortDate("2026-01-01"), "Jan 1", "formatShortDate Jan 1");
+check(formatShortDate("oops"), "—", "formatShortDate invalid");
+
+// formatStrategy
+check(formatStrategy("lending-vault"), "Lending Vault", "formatStrategy lending-vault");
+check(formatStrategy("long-vol"), "Long Volatility", "formatStrategy long-vol");
+check(formatStrategy("unknown"), "unknown", "formatStrategy unknown passthrough");
 
 console.log("All format checks passed.");
