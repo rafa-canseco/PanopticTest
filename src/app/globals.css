@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Surfaces */
+  --color-bg: #0a0118;
+  --color-surface: #160934;
+  --color-elevated: #1f124a;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Lines & dividers */
+  --color-line: rgba(78, 20, 208, 0.18);
+
+  /* Text */
+  --color-ink: #ffffff;
+  --color-foreground: #e8e0f5;
+  --color-muted: #a89bc8;
+
+  /* Brand (Panoptic) */
+  --color-brand: #4e14d0;
+  --color-brand-light: #9b6fff;
+  --color-brand-soft: rgba(78, 20, 208, 0.18);
+  --color-success: #00d091;
+
+  /* Fonts (loaded by next/font in layout.tsx) */
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-ibm-plex-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg);
+  background-image:
+    linear-gradient(rgba(78, 20, 208, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(78, 20, 208, 0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-attachment: fixed;
+  color: var(--color-foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+code,
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+::selection {
+  background: var(--color-brand);
+  color: var(--color-ink);
 }

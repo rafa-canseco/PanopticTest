@@ -103,15 +103,16 @@ export default function HomePage() {
   const selected = ranked.find((s) => s.user.id === selectedUserId) ?? ranked[0];
 
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <div className="min-h-screen font-sans text-foreground">
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 sm:text-3xl">
-            HyperUnicorn Points
-          </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Useful capital, not raw activity.
-          </p>
+        <header className="mb-6 flex items-center gap-3">
+          <BrandMark />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+              HyperUnicorn Points
+            </h1>
+            <p className="mt-1 text-sm text-muted">Useful capital, not raw activity.</p>
+          </div>
         </header>
 
         <Tabs
@@ -149,7 +150,7 @@ export default function HomePage() {
           onChange={(id) => setActiveTab(id as TabId)}
         />
 
-        <footer className="pt-6 text-xs text-zinc-500 dark:text-zinc-500">
+        <footer className="pt-6 text-xs text-muted">
           All points computed live from <code className="font-mono">aggregateUserPoints</code>.
           No values are hardcoded.
         </footer>
@@ -158,12 +159,39 @@ export default function HomePage() {
   );
 }
 
+function BrandMark() {
+  return (
+    <svg
+      role="img"
+      aria-label="Panoptic-inspired brand mark"
+      viewBox="0 0 64 64"
+      className="h-9 w-9 shrink-0"
+    >
+      <circle cx="32" cy="32" r="14" fill="none" stroke="#4e14d0" strokeWidth="6" />
+      <path
+        d="M14 14 A 24 24 0 0 0 14 50"
+        fill="none"
+        stroke="#4e14d0"
+        strokeWidth="6"
+        strokeLinecap="butt"
+      />
+      <path
+        d="M50 14 A 24 24 0 0 1 50 50"
+        fill="none"
+        stroke="#4e14d0"
+        strokeWidth="6"
+        strokeLinecap="butt"
+      />
+    </svg>
+  );
+}
+
 function ErrorPanel({ title, message }: { title: string; message: string }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-6 dark:bg-zinc-950">
-      <div className="max-w-xl rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-        <h1 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">{title}</h1>
-        <pre className="mt-3 overflow-x-auto rounded bg-zinc-50 p-3 font-mono text-xs text-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
+    <div className="flex min-h-screen items-center justify-center p-6">
+      <div className="max-w-xl rounded-lg border border-line bg-surface p-6">
+        <h1 className="text-lg font-bold text-ink">{title}</h1>
+        <pre className="mt-3 overflow-x-auto rounded bg-bg p-3 font-mono text-xs text-foreground">
           {message}
         </pre>
       </div>

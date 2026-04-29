@@ -39,7 +39,7 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
         role="tablist"
         aria-orientation="horizontal"
         onKeyDown={handleKeyDown}
-        className="flex gap-1 border-b border-zinc-200 dark:border-zinc-800"
+        className="flex gap-1 border-b border-line"
       >
         {tabs.map((t) => {
           const selected = t.id === active;
@@ -54,10 +54,10 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
               tabIndex={selected ? 0 : -1}
               onClick={() => onChange(t.id)}
               className={
-                "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 " +
+                "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light " +
                 (selected
-                  ? "border-indigo-500 text-zinc-950 dark:text-zinc-50"
-                  : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100")
+                  ? "border-brand-light text-ink"
+                  : "border-transparent text-muted hover:text-foreground")
               }
             >
               {t.label}

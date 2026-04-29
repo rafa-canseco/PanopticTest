@@ -65,39 +65,37 @@ function pillClass(tone: Tone): string {
   const base = "rounded-full px-2 py-0.5 text-xs font-medium ";
   switch (tone) {
     case "boosted":
-      return base + "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200";
+      return base + "bg-success/15 text-success";
     case "partial":
-      return base + "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200";
+      return base + "bg-amber-900/40 text-amber-200";
     case "eligible-no-qualify":
-      return base + "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200";
+      return base + "bg-rose-900/40 text-rose-200";
     case "no-eligible":
-      return base + "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+      return base + "bg-elevated text-muted";
   }
 }
 
 export function CampaignEligibility({ campaigns, activities }: CampaignEligibilityProps) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <header className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
-          Campaign eligibility
-        </h2>
-        <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+    <div className="rounded-lg border border-line bg-surface">
+      <header className="border-b border-line px-4 py-3">
+        <h2 className="text-sm font-bold text-ink">Campaign eligibility</h2>
+        <p className="mt-0.5 text-xs text-muted">
           Why this user did or didn&apos;t earn each campaign boost.
         </p>
       </header>
-      <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+      <ul className="divide-y divide-line">
         {campaigns.map((c) => {
           const stats = analyze(c, activities);
           const { tone, label, detail } = describe(stats, c);
           return (
             <li key={c.id} className="px-4 py-3">
               <div className="flex items-baseline justify-between gap-2">
-                <h3 className="text-sm font-medium text-zinc-950 dark:text-zinc-50">{c.name}</h3>
+                <h3 className="text-sm font-medium text-ink">{c.name}</h3>
                 <span className={pillClass(tone)}>{label}</span>
               </div>
-              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{detail}</p>
-              <p className="mt-1 font-mono text-[11px] text-zinc-500 dark:text-zinc-500">
+              <p className="mt-1 text-xs text-foreground">{detail}</p>
+              <p className="mt-1 font-mono text-[11px] text-muted">
                 {formatMultiplier(c.multiplier)} · ≥{c.minActiveHours}h · {c.startDate} → {c.endDate}
               </p>
             </li>

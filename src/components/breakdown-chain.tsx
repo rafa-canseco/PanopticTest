@@ -32,8 +32,8 @@ function Step({ label, value, note, emphasized = false }: StepProps) {
         <div
           className={
             emphasized
-              ? "text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400"
-              : "text-sm text-zinc-700 dark:text-zinc-300"
+              ? "text-xs font-semibold uppercase tracking-wide text-muted"
+              : "text-sm text-foreground"
           }
         >
           {label}
@@ -42,16 +42,14 @@ function Step({ label, value, note, emphasized = false }: StepProps) {
           className={
             "tabular-nums " +
             (emphasized
-              ? "text-2xl font-semibold text-zinc-950 dark:text-zinc-50"
-              : "text-base font-semibold text-zinc-900 dark:text-zinc-100")
+              ? "text-2xl font-bold text-ink"
+              : "text-base font-bold text-foreground")
           }
         >
           {formatPoints(value)}
         </div>
       </div>
-      {note ? (
-        <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">{note}</div>
-      ) : null}
+      {note ? <div className="mt-1 text-xs text-muted">{note}</div> : null}
     </div>
   );
 }
@@ -72,36 +70,29 @@ function CountedSplit({ counted, discounted, countedPct }: CountedSplitProps) {
   return (
     <div className="py-3">
       <div className="mb-2 flex items-baseline justify-between gap-3">
-        <div className="text-sm text-zinc-700 dark:text-zinc-300">Counted vs discounted</div>
-        <div className="text-xs text-zinc-500 dark:text-zinc-500 tabular-nums">
+        <div className="text-sm text-foreground">Counted vs discounted</div>
+        <div className="text-xs tabular-nums text-muted">
           {countedPct.toFixed(0)}% counted
         </div>
       </div>
       <div
-        className="flex h-2 overflow-hidden rounded-full bg-rose-200 dark:bg-rose-900/40"
+        className="flex h-2 overflow-hidden rounded-full bg-elevated"
         role="img"
         aria-label={`${countedPct.toFixed(0)} percent counted, ${discountedPct.toFixed(0)} percent discounted`}
       >
-        <div
-          className="bg-emerald-500 dark:bg-emerald-400"
-          style={{ width: `${countedPct}%` }}
-        />
+        <div className="bg-success" style={{ width: `${countedPct}%` }} />
       </div>
       <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
         <div>
-          <dt className="text-xs text-zinc-500 dark:text-zinc-500">Counted</dt>
-          <dd className="font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">
-            {formatPoints(counted)}
-          </dd>
+          <dt className="text-xs text-muted">Counted</dt>
+          <dd className="font-bold tabular-nums text-success">{formatPoints(counted)}</dd>
         </div>
         <div className="text-right">
-          <dt className="text-xs text-zinc-500 dark:text-zinc-500">Discounted</dt>
-          <dd className="font-semibold tabular-nums text-rose-700 dark:text-rose-400">
-            {formatPoints(discounted)}
-          </dd>
+          <dt className="text-xs text-muted">Discounted</dt>
+          <dd className="font-bold tabular-nums text-muted">{formatPoints(discounted)}</dd>
         </div>
       </dl>
-      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">{note}</p>
+      <p className="mt-2 text-xs text-muted">{note}</p>
     </div>
   );
 }
@@ -115,15 +106,13 @@ interface MiniProps {
 function Mini({ label, value, primary = false }: MiniProps) {
   return (
     <div>
-      <div className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-        {label}
-      </div>
+      <div className="text-xs font-medium uppercase tracking-wide text-muted">{label}</div>
       <div
         className={
           "tabular-nums " +
           (primary
-            ? "text-lg font-semibold text-zinc-950 dark:text-zinc-50"
-            : "text-base font-semibold text-zinc-900 dark:text-zinc-100")
+            ? "text-lg font-bold text-ink"
+            : "text-base font-bold text-foreground")
         }
       >
         {formatPoints(value)}
@@ -145,18 +134,16 @@ export function BreakdownChain({ summary }: BreakdownChainProps) {
   const countedPct = preChurn > 0 ? (counted / preChurn) * 100 : 100;
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      <header className="border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <h2 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
-          {summary.user.name} — formula breakdown
-        </h2>
+    <div className="rounded-lg border border-line bg-surface">
+      <header className="border-b border-line px-4 py-3">
+        <h2 className="text-sm font-bold text-ink">{summary.user.name} — formula breakdown</h2>
         <div className="mt-3 grid grid-cols-3 gap-2">
           <Mini label="Vault" value={summary.vaultPoints} />
           <Mini label="Trader" value={summary.traderPoints} />
           <Mini label="Total" value={summary.totalPoints} primary />
         </div>
       </header>
-      <div className="divide-y divide-zinc-100 px-4 dark:divide-zinc-800">
+      <div className="divide-y divide-line px-4">
         <Step
           label="Active USD-days"
           value={breakdown.basePoints}
