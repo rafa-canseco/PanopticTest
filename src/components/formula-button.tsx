@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
+import { ArcMark } from "@/components/arc-mark";
 import { FormulaCard } from "@/components/formula-card";
 
 export function FormulaButton() {
@@ -33,9 +34,7 @@ export function FormulaButton() {
         aria-label="View the points formula"
         className="group inline-flex items-center gap-2 self-start border border-line bg-surface/60 px-3.5 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground transition-colors hover:border-brand/50 hover:bg-brand-soft hover:text-brand-light focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light"
       >
-        <span aria-hidden className="text-brand-light">
-          ƒ
-        </span>
+        <ArcMark size={14} variant="soft" className="shrink-0" />
         <span>The formula</span>
       </button>
 
