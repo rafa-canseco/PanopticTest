@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { type EnrichedActivity } from "@/components/activity-table";
 import { InspectorTab } from "@/components/inspector-tab";
 import { OverviewTab } from "@/components/overview-tab";
+import { SimulatorTab } from "@/components/simulator-tab";
 import { Tabs } from "@/components/tabs";
 import { activities } from "@/data/activities";
 import { campaigns } from "@/data/campaigns";
@@ -17,7 +18,7 @@ import {
 } from "@/lib/points";
 import type { UserPointsSummary } from "@/lib/types";
 
-type TabId = "overview" | "inspector";
+type TabId = "inspector" | "overview" | "simulator";
 
 interface ComputeOk {
   kind: "ok";
@@ -144,6 +145,11 @@ export default function HomePage() {
                   onInspectUser={handleInspectUser}
                 />
               ),
+            },
+            {
+              id: "simulator",
+              label: "Simulator",
+              panel: <SimulatorTab campaigns={campaigns} />,
             },
           ]}
           active={activeTab}

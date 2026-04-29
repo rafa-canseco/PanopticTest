@@ -26,3 +26,21 @@ export function formatDateRange(start: string, end: string): string {
   if (!ISO_DATE.test(start) || !ISO_DATE.test(end)) return "—";
   return `${start} → ${end}`;
 }
+
+export function formatUsd(n: number): string {
+  if (!Number.isFinite(n)) return "—";
+  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+  if (Math.abs(n) >= 10_000) return `$${(n / 1_000).toFixed(0)}k`;
+  if (Math.abs(n) >= 1_000) return `$${(n / 1_000).toFixed(1)}k`;
+  return `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+}
+
+export function formatHours(n: number): string {
+  if (!Number.isFinite(n)) return "—";
+  return Number.isInteger(n) ? `${n}h` : `${n.toFixed(1)}h`;
+}
+
+export function formatPercent(ratio: number): string {
+  if (!Number.isFinite(ratio)) return "—";
+  return `${Math.round(ratio * 100)}%`;
+}

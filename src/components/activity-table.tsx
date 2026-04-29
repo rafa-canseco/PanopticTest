@@ -1,4 +1,10 @@
-import { formatMultiplier, formatPoints } from "@/lib/format";
+import {
+  formatHours,
+  formatMultiplier,
+  formatPercent,
+  formatPoints,
+  formatUsd,
+} from "@/lib/format";
 import type { ActivityPoints } from "@/lib/types";
 
 export interface EnrichedActivity {
@@ -30,7 +36,7 @@ export function ActivityTable({ userName, activities }: ActivityTableProps) {
           {userName} — activity ({activities.length} rows)
         </h2>
         <p className="mt-0.5 text-xs text-muted">
-          Per-row multipliers and final points after the full Quality × Campaign × Churn chain.
+          Capital × Hours/24 = USD-days, then through Quality × Campaign × Churn = Final.
         </p>
       </div>
       {activities.length === 0 ? (
@@ -47,7 +53,10 @@ export function ActivityTable({ userName, activities }: ActivityTableProps) {
               <tr className="border-b border-line">
                 <th scope="col" className="px-3 py-2 text-left font-medium">Date</th>
                 <th scope="col" className="px-3 py-2 text-left font-medium">Strategy</th>
-                <th scope="col" className="px-3 py-2 text-left font-medium">Category</th>
+                <th scope="col" className="px-3 py-2 text-left font-medium">Cat</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Capital</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Hours</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Useful</th>
                 <th scope="col" className="px-3 py-2 text-right font-medium">USD-days</th>
                 <th scope="col" className="px-3 py-2 text-right font-medium">Quality ×</th>
                 <th scope="col" className="px-3 py-2 text-right font-medium">Campaign ×</th>
@@ -74,7 +83,16 @@ export function ActivityTable({ userName, activities }: ActivityTableProps) {
                         {a.category}
                       </span>
                     </td>
+                    <td className="px-3 py-2 text-right font-mono tabular-nums text-foreground">
+                      {formatUsd(a.usdCapital)}
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono tabular-nums text-foreground">
+                      {formatHours(a.activeHours)}
+                    </td>
                     <td className="px-3 py-2 text-right tabular-nums text-foreground">
+                      {formatPercent(a.usefulRatio)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-muted">
                       {formatPoints(points.breakdown.basePoints)}
                     </td>
                     <td

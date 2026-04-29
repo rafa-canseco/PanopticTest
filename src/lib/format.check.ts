@@ -1,8 +1,11 @@
 import {
   formatDateRange,
+  formatHours,
   formatMultiplier,
+  formatPercent,
   formatPoints,
   formatSignedPoints,
+  formatUsd,
 } from "@/lib/format";
 
 function fail(msg: string): never {
@@ -61,5 +64,25 @@ check(
 check(formatDateRange("oops", "2026-04-07"), "—", "formatDateRange invalid start");
 check(formatDateRange("2026-04-01", ""), "—", "formatDateRange invalid end");
 check(formatDateRange("04/01/2026", "2026-04-07"), "—", "formatDateRange wrong format");
+
+// formatUsd: compact for thousands+, dollar sign always.
+check(formatUsd(0), "$0", "formatUsd(0)");
+check(formatUsd(950), "$950", "formatUsd(950)");
+check(formatUsd(1500), "$1.5k", "formatUsd(1500)");
+check(formatUsd(100_000), "$100k", "formatUsd(100k)");
+check(formatUsd(1_000_000), "$1.00M", "formatUsd(1M)");
+check(formatUsd(NaN), "—", "formatUsd(NaN)");
+
+// formatHours
+check(formatHours(0), "0h", "formatHours(0)");
+check(formatHours(12), "12h", "formatHours(12)");
+check(formatHours(11.5), "11.5h", "formatHours(11.5)");
+check(formatHours(NaN), "—", "formatHours(NaN)");
+
+// formatPercent
+check(formatPercent(0), "0%", "formatPercent(0)");
+check(formatPercent(0.75), "75%", "formatPercent(0.75)");
+check(formatPercent(1), "100%", "formatPercent(1)");
+check(formatPercent(NaN), "—", "formatPercent(NaN)");
 
 console.log("All format checks passed.");
