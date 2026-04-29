@@ -1,3 +1,4 @@
+import { ActivityLog } from "@/components/activity-log";
 import { CampaignEligibility } from "@/components/campaign-eligibility";
 import { ContributionBreakdown } from "@/components/contribution-breakdown";
 import { MyPointsCard } from "@/components/my-points-card";
@@ -63,6 +64,9 @@ export function MyScoreTab({
           <CampaignEligibility campaigns={campaigns} activities={userActivities} />
         </div>
       </div>
+
+      {/* Detail · Full activity log — collapsed by default */}
+      <ActivityLog userName={selected.user.name} activities={enrichedActivities} />
     </div>
   );
 }
