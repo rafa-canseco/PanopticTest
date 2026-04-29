@@ -13,6 +13,7 @@ export function TopActivities({ activities, limit = 5 }: TopActivitiesProps) {
 
   return (
     <section
+      data-tour="top-activities"
       className="border border-line bg-surface"
       aria-labelledby="top-activities-heading"
     >

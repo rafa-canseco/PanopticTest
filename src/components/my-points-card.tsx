@@ -8,6 +8,7 @@ interface MyPointsCardProps {
 export function MyPointsCard({ summary }: MyPointsCardProps) {
   return (
     <section
+      data-tour="my-points"
       className="relative overflow-hidden border border-line bg-surface p-6 sm:p-8"
       aria-label={`${summary.user.name} points`}
     >

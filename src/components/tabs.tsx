@@ -39,6 +39,7 @@ export function Tabs({ tabs, active, onChange }: TabsProps) {
         role="tablist"
         aria-orientation="horizontal"
         onKeyDown={handleKeyDown}
+        data-tour="tabs"
         className="flex gap-1 border-b border-line"
       >
         {tabs.map((t, i) => {

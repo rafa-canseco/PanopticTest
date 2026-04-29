@@ -9,6 +9,7 @@ interface UserSelectorProps {
 export function UserSelector({ users, selectedUserId, onSelect }: UserSelectorProps) {
   return (
     <section
+      data-tour="user-selector"
       className="flex flex-col gap-3 border border-line bg-surface px-5 py-4 sm:flex-row sm:items-center sm:gap-5"
       aria-label="Inspect user"
     >

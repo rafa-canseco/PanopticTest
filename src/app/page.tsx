@@ -6,6 +6,7 @@ import { ArcMark } from "@/components/arc-mark";
 import { LeaderboardTab } from "@/components/leaderboard-tab";
 import { MyScoreTab } from "@/components/my-score-tab";
 import { Tabs } from "@/components/tabs";
+import { TourButton } from "@/components/tour-button";
 import { activities } from "@/data/activities";
 import { campaigns } from "@/data/campaigns";
 import { users } from "@/data/users";
@@ -138,9 +139,12 @@ export default function HomePage() {
             </h1>
           </div>
 
-          <p className="reveal reveal-3 mt-5 max-w-md text-base text-foreground sm:text-lg">
-            Useful capital, not raw activity.
-          </p>
+          <div className="reveal reveal-3 mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+            <p className="max-w-md text-base text-foreground sm:text-lg">
+              Useful capital, not raw activity.
+            </p>
+            <TourButton onBeforeStart={() => setActiveTab("my-score")} />
+          </div>
 
           <div className="reveal reveal-4 rule-fade mt-10" />
         </header>

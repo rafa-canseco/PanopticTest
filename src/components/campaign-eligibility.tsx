@@ -90,7 +90,11 @@ function rail(tone: Tone): string {
 
 export function CampaignEligibility({ campaigns, activities }: CampaignEligibilityProps) {
   return (
-    <section className="border border-line bg-surface" aria-labelledby="eligibility-heading">
+    <section
+      data-tour="eligibility"
+      className="border border-line bg-surface"
+      aria-labelledby="eligibility-heading"
+    >
       <header className="border-b border-line px-6 py-5">
         <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
           Section · Eligibility

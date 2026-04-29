@@ -92,6 +92,7 @@ export function ContributionBreakdown({ summary }: ContributionBreakdownProps) {
 
   return (
     <section
+      data-tour="contribution"
       className="border border-line bg-surface"
       aria-labelledby="contribution-heading"
     >
