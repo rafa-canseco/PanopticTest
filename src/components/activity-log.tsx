@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import {
   formatHours,
@@ -28,26 +28,49 @@ function multiplierClass(m: number): string {
 interface TipProps {
   children: ReactNode;
   label: string;
+  /**
+   * Where the tooltip floats relative to the trigger.
+   * - center (default): horizontally centered. OK for mid-line values.
+   * - end: anchored to the trigger's right edge so right-aligned values
+   *   (final points column) don't push the tooltip past the section edge.
+   */
+  align?: "center" | "end";
+  /**
+   * Decorative wrappers (multiplier tags whose meaning is already conveyed
+   * by their color and adjacent label) skip the tab stop to avoid 6× tab
+   * stops per row. The native `title` attribute still surfaces the text
+   * for screen readers and pointer-keyboard users via focus.
+   */
+  decorative?: boolean;
 }
 
 /**
- * Inline value with a hoverable tooltip explaining what it is.
- * Dotted underline acts as the affordance; the native title attribute
- * provides a fallback for keyboard / screen-reader users on platforms
- * where the visual tooltip can't render.
+ * Inline value with a hoverable tooltip explaining what it is. Dotted
+ * underline = affordance, `title` = SR/touch fallback, `aria-describedby`
+ * wires the visible tooltip to AT for keyboard users.
  */
-function Tip({ children, label }: TipProps) {
+function Tip({ children, label, align = "center", decorative = false }: TipProps) {
+  const tooltipId = useId();
+  const positionClass =
+    align === "end"
+      ? "right-0 left-auto translate-x-0"
+      : "left-1/2 -translate-x-1/2";
   return (
     <span className="group relative inline-block" title={label}>
       <span
-        tabIndex={0}
+        tabIndex={decorative ? undefined : 0}
+        aria-describedby={decorative ? undefined : tooltipId}
         className="cursor-help border-b border-dotted border-muted/50 pb-px focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-light"
       >
         {children}
       </span>
       <span
+        id={tooltipId}
         role="tooltip"
-        className="pointer-events-none invisible absolute bottom-full left-1/2 z-30 mb-2 w-max max-w-[260px] -translate-x-1/2 border border-brand/40 bg-surface px-3 py-2 text-left text-xs font-normal normal-case leading-snug tracking-normal text-foreground opacity-0 shadow-[0_12px_32px_rgba(0,0,0,0.55)] transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+        className={
+          "pointer-events-none invisible absolute bottom-full z-30 mb-2 w-max max-w-[260px] border border-brand/40 bg-surface px-3 py-2 text-left text-xs font-normal normal-case leading-snug tracking-normal text-foreground opacity-0 shadow-[0_12px_32px_rgba(0,0,0,0.55)] transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 " +
+          positionClass
+        }
       >
         {label}
       </span>
@@ -63,7 +86,7 @@ interface MultiplierTagProps {
 
 function MultiplierTag({ label, value, tip }: MultiplierTagProps) {
   return (
-    <Tip label={tip}>
+    <Tip label={tip} decorative>
       <span className="inline-flex items-baseline gap-1 font-mono text-[11px] tabular-nums">
         <span className="text-muted">{label}</span>
         <span className={multiplierClass(value)}>{formatMultiplier(value)}</span>
@@ -130,7 +153,10 @@ export function ActivityLog({ userName, activities }: ActivityLogProps) {
                     </span>
                   </div>
                   <div className="text-right shrink-0">
-                    <Tip label="Final points earned by this row after Quality, Campaign, and Churn multipliers were applied to the row's USD-days.">
+                    <Tip
+                      align="end"
+                      label="Final points earned by this row after Quality, Campaign, and Churn multipliers were applied to the row's USD-days."
+                    >
                       <span className="text-xl font-bold tabular-nums tracking-[-0.02em] text-ink">
                         {formatPoints(final)}
                       </span>
@@ -178,14 +204,23 @@ export function ActivityLog({ userName, activities }: ActivityLogProps) {
                     tip="Churn multiplier — 0.25× when the row is short-lived (farming protection: only 25% counts), 1.00× otherwise. Vault-managed rebalances are exempt."
                   />
                   {a.isShortLived ? (
-                    <Tip label="Engine flag — this row is treated as short-lived activity, which triggers the 0.25× churn multiplier unless it's also a vault-managed rebalance.">
-                      <span className="ml-auto border border-rose-400/30 bg-rose-400/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-rose-200">
-                        short-lived
-                      </span>
-                    </Tip>
+                    <span className="ml-auto">
+                      <Tip
+                        align="end"
+                        decorative
+                        label="Engine flag — this row is treated as short-lived activity, which triggers the 0.25× churn multiplier unless it's also a vault-managed rebalance."
+                      >
+                        <span className="border border-rose-400/30 bg-rose-400/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-rose-200">
+                          short-lived
+                        </span>
+                      </Tip>
+                    </span>
                   ) : null}
                   {a.isVaultManagedRebalance ? (
-                    <Tip label="Engine flag — this row is a vault-managed rebalance (legitimate strategy maintenance, e.g. gamma scalping). Exempt from the churn discount even when short-lived.">
+                    <Tip
+                      decorative
+                      label="Engine flag — this row is a vault-managed rebalance (legitimate strategy maintenance, e.g. gamma scalping). Exempt from the churn discount even when short-lived."
+                    >
                       <span className="border border-brand/40 bg-brand-soft px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-brand-light">
                         rebalance
                       </span>

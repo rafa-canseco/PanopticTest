@@ -9,7 +9,8 @@
     "lint": "eslint",
     "points:check": "bun run src/lib/points.check.ts",
     "format:check": "bun run src/lib/format.check.ts",
-    "check": "bun run lint && bunx tsc --noEmit && bun run points:check && bun run format:check"
+    "narrative:check": "bun run src/lib/narrative.check.ts",
+    "check": "bun run lint && bunx tsc --noEmit && bun run points:check && bun run format:check && bun run narrative:check"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

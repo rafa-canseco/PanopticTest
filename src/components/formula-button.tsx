@@ -9,7 +9,17 @@ export function FormulaButton() {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   function open(): void {
-    dialogRef.current?.showModal();
+    const dlg = dialogRef.current;
+    if (!dlg || dlg.open) return;
+    try {
+      dlg.showModal();
+    } catch (err) {
+      // showModal throws InvalidStateError if already open or NotSupportedError
+      // on legacy browsers. Surface the failure and fall back to non-modal show
+      // so the user still gets the formula content.
+      console.error("Formula dialog failed to open modally:", err);
+      dlg.show?.();
+    }
   }
   function close(): void {
     dialogRef.current?.close();
@@ -20,6 +30,9 @@ export function FormulaButton() {
     const dlg = dialogRef.current;
     if (!dlg) return;
     function handleClick(e: MouseEvent): void {
+      // dlg is the captured non-null ref from the outer closure; the optional
+      // chaining is for TS's narrowing purposes only (it can't follow the
+      // closure's `if (!dlg) return;` guard into the inner function).
       if (e.target === dlg) dlg?.close();
     }
     dlg.addEventListener("click", handleClick);
@@ -40,7 +53,7 @@ export function FormulaButton() {
 
       <dialog
         ref={dialogRef}
-        aria-label="Points formula reference"
+        aria-label="The exact formula"
         className="formula-dialog backdrop:bg-bg/85 m-auto max-w-2xl border border-brand/40 bg-surface p-0 text-foreground shadow-[0_24px_60px_rgba(78,20,208,0.25)]"
       >
         <div className="relative">

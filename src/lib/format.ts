@@ -29,10 +29,12 @@ export function formatDateRange(start: string, end: string): string {
 
 export function formatUsd(n: number): string {
   if (!Number.isFinite(n)) return "—";
-  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-  if (Math.abs(n) >= 10_000) return `$${(n / 1_000).toFixed(0)}k`;
-  if (Math.abs(n) >= 1_000) return `$${(n / 1_000).toFixed(1)}k`;
-  return `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+  const sign = n < 0 ? "−" : "";
+  const abs = Math.abs(n);
+  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(2)}M`;
+  if (abs >= 10_000) return `${sign}$${(abs / 1_000).toFixed(0)}k`;
+  if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(1)}k`;
+  return `${sign}$${abs.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 }
 
 export function formatHours(n: number): string {
@@ -42,7 +44,9 @@ export function formatHours(n: number): string {
 
 export function formatPercent(ratio: number): string {
   if (!Number.isFinite(ratio)) return "—";
-  return `${Math.round(ratio * 100)}%`;
+  // Floor instead of round so a value like 0.899 doesn't display as "90%"
+  // and falsely promote it to the next visible Quality band.
+  return `${Math.floor(ratio * 100)}%`;
 }
 
 const SHORT_MONTHS = [
@@ -56,6 +60,7 @@ export function formatShortDate(iso: string): string {
   const monthIdx = Number(monthStr) - 1;
   const day = Number(dayStr);
   if (monthIdx < 0 || monthIdx > 11) return "—";
+  if (day < 1 || day > 31) return "—";
   return `${SHORT_MONTHS[monthIdx]} ${day}`;
 }
 

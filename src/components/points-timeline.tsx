@@ -77,6 +77,10 @@ function buildDailyCumulative(
   }
 
   const days = daysBetween(seasonStart, seasonEnd);
+  if (days < 0) {
+    console.error(`PointsTimeline: invalid season window ${seasonStart} → ${seasonEnd}`);
+    return [];
+  }
   const result: DailyPoint[] = [];
   let running = 0;
   for (let i = 0; i <= days; i++) {
@@ -96,7 +100,8 @@ function buildDailyCumulative(
 
 function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
-  const point = payload[0].payload;
+  const point = payload[0]?.payload;
+  if (!point) return null;
   return (
     <div className="border border-brand/40 bg-surface px-3 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
       <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
@@ -131,6 +136,16 @@ const AXIS_TICK = {
 };
 
 export function PointsTimeline({ userName, activities, campaigns }: PointsTimelineProps) {
+  if (campaigns.length === 0) {
+    return (
+      <section className="border border-line bg-surface px-6 py-8" aria-label="Points timeline">
+        <p className="text-sm text-muted">
+          No season window configured — add at least one campaign to render the timeline.
+        </p>
+      </section>
+    );
+  }
+
   const seasonStart = campaigns.reduce(
     (min, c) => (c.startDate < min ? c.startDate : min),
     campaigns[0].startDate,

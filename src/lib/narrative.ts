@@ -9,12 +9,18 @@ export function narrativeFor(summary: UserPointsSummary): string {
 
   if (totalPoints === 0) return "No scored activity yet.";
 
+  // Engine contract says totalPoints > 0 implies basePoints > 0 (the formula
+  // can't produce points from zero base). Guard against the type-permitted
+  // anomaly so we don't fall through every meaningful branch and gloss over
+  // a contract violation.
+  if (breakdown.basePoints === 0) {
+    return "Score derived without recorded base activity — review engine output.";
+  }
+
   const preChurn = breakdown.preChurnPoints;
   const churnPct = preChurn > 0 ? breakdown.churnDiscount / preChurn : 0;
   const qualityRatio =
-    breakdown.basePoints > 0
-      ? (breakdown.basePoints + breakdown.qualityUplift) / breakdown.basePoints
-      : 1;
+    (breakdown.basePoints + breakdown.qualityUplift) / breakdown.basePoints;
 
   if (churnPct >= 0.5) {
     const counted = Math.round((1 - churnPct) * 100);

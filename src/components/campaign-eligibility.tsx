@@ -36,6 +36,19 @@ function analyze(campaign: Campaign, activities: ActivityRow[]): Stats {
 }
 
 function describe(stats: Stats, c: Campaign): OutcomeView {
+  if (stats.boosted > stats.eligibleStrategy) {
+    // analyze() makes this impossible (boosted is filtered from eligibleStrategy),
+    // but the invariant is worth surfacing if a future change breaks it instead
+    // of producing a negative "missed" count silently.
+    console.error(
+      `CampaignEligibility invariant violated for ${c.id}: boosted=${stats.boosted} > eligibleStrategy=${stats.eligibleStrategy}`,
+    );
+    return {
+      kind: "earned",
+      badge: "Earned",
+      detail: "All eligible rows qualified.",
+    };
+  }
   if (stats.boosted > 0 && stats.boosted === stats.eligibleStrategy) {
     return {
       kind: "earned",

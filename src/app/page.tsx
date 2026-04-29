@@ -32,16 +32,24 @@ interface ComputeError {
 }
 
 function computeDashboard(): ComputeOk | ComputeError {
+  let summaries;
   try {
-    const summaries = aggregateUserPoints(users, activities, campaigns);
-    const ranked = [...summaries].sort(
-      (a, b) =>
-        b.totalPoints - a.totalPoints || a.user.id.localeCompare(b.user.id),
-    );
-    return { kind: "ok", ranked };
+    summaries = aggregateUserPoints(users, activities, campaigns);
   } catch (err) {
-    return { kind: "error", message: err instanceof Error ? err.message : String(err) };
+    console.error("computeDashboard: aggregateUserPoints failed", err);
+    return {
+      kind: "error",
+      message:
+        err instanceof Error
+          ? err.stack ? `${err.message}\n\n${err.stack}` : err.message
+          : String(err),
+    };
   }
+  const ranked = [...summaries].sort(
+    (a, b) =>
+      b.totalPoints - a.totalPoints || a.user.id.localeCompare(b.user.id),
+  );
+  return { kind: "ok", ranked };
 }
 
 function enrichActivities(summary: UserPointsSummary): EnrichedActivity[] {
@@ -104,8 +112,10 @@ export default function HomePage() {
         <header className="mb-10 sm:mb-14">
           {/* Display title — single line on every viewport */}
           <div className="reveal reveal-2 flex items-end gap-3 sm:gap-6">
-            <ArcMark size={40} className="shrink-0 sm:hidden" />
-            <ArcMark size={56} className="hidden shrink-0 sm:block lg:hidden" />
+            {/* Three responsive sizes; only one is visible at a time so the
+                others must not be announced by AT. */}
+            <ArcMark size={40} decorative className="shrink-0 sm:hidden" />
+            <ArcMark size={56} decorative className="hidden shrink-0 sm:block lg:hidden" />
             <ArcMark size={64} className="hidden shrink-0 lg:block" />
             <h1 className="text-2xl font-bold leading-[0.95] tracking-[-0.03em] text-ink sm:text-5xl lg:text-6xl">
               HyperUnicorn <span className="text-brand-light">Points.</span>
@@ -169,7 +179,7 @@ function ErrorPanel({ title, message }: { title: string; message: string }) {
     <div className="flex min-h-screen items-center justify-center p-6">
       <div className="max-w-xl border border-line bg-surface p-6">
         <h1 className="text-lg font-bold text-ink">{title}</h1>
-        <pre className="mt-3 overflow-x-auto bg-bg p-3 font-mono text-xs text-foreground">
+        <pre className="mt-3 overflow-x-auto bg-bg p-3 font-mono text-xs text-foreground whitespace-pre-wrap">
           {message}
         </pre>
       </div>

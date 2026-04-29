@@ -2,7 +2,8 @@
 
 import { driver, type DriveStep } from "driver.js";
 import "driver.js/dist/driver.css";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { flushSync } from "react-dom";
 
 import { ArcMark } from "@/components/arc-mark";
 
@@ -101,28 +102,34 @@ interface TourButtonProps {
 }
 
 export function TourButton({ onBeforeStart }: TourButtonProps) {
+  // Re-entrancy guard: prevents the auto-start setTimeout and a manual click
+  // from racing into two driver instances.
+  const startedRef = useRef(false);
+
   const start = useCallback(() => {
-    onBeforeStart?.();
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const drv = driver({
-          showProgress: true,
-          progressText: "{{current}} / {{total}}",
-          nextBtnText: "Next →",
-          prevBtnText: "← Back",
-          doneBtnText: "Got it",
-          steps: STEPS,
-          onDestroyed: () => {
-            try {
-              localStorage.setItem(TOUR_FLAG, "1");
-            } catch {
-              // localStorage may be unavailable (private mode, etc.). Skip silently.
-            }
-          },
-        });
-        drv.drive();
-      });
+    if (startedRef.current) return;
+    startedRef.current = true;
+    // flushSync ensures any tab-state change in onBeforeStart is committed to
+    // the DOM before driver.js reads selectors — otherwise the tour can fire
+    // against elements that haven't been rendered yet.
+    if (onBeforeStart) flushSync(() => onBeforeStart());
+    const drv = driver({
+      showProgress: true,
+      progressText: "{{current}} / {{total}}",
+      nextBtnText: "Next →",
+      prevBtnText: "← Back",
+      doneBtnText: "Got it",
+      steps: STEPS,
+      onDestroyed: () => {
+        startedRef.current = false;
+        try {
+          localStorage.setItem(TOUR_FLAG, "1");
+        } catch (err) {
+          console.warn("Tour: localStorage unavailable, dismissal not persisted.", err);
+        }
+      },
     });
+    drv.drive();
   }, [onBeforeStart]);
 
   // Auto-start on first visit.
@@ -131,7 +138,8 @@ export function TourButton({ onBeforeStart }: TourButtonProps) {
     let seen = false;
     try {
       seen = localStorage.getItem(TOUR_FLAG) === "1";
-    } catch {
+    } catch (err) {
+      console.warn("Tour: localStorage unavailable, suppressing auto-start.", err);
       seen = true;
     }
     if (seen) return;

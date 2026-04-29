@@ -10,10 +10,8 @@ export function StandingCard({ summary, ranked }: StandingCardProps) {
   const rank = ranked.findIndex((r) => r.user.id === summary.user.id) + 1;
   const total = ranked.length;
   const { breakdown } = summary;
-  const countedRate =
-    breakdown.preChurnPoints > 0
-      ? breakdown.finalPoints / breakdown.preChurnPoints
-      : 1;
+  const hasActivity = breakdown.preChurnPoints > 0;
+  const countedRate = hasActivity ? breakdown.finalPoints / breakdown.preChurnPoints : 0;
   const countedPct = Math.round(countedRate * 100);
 
   return (
@@ -54,15 +52,21 @@ export function StandingCard({ summary, ranked }: StandingCardProps) {
           <dd
             className={
               "mt-1 font-mono text-base font-bold tabular-nums " +
-              (countedPct === 100 ? "text-success" : "text-rose-300")
+              (!hasActivity
+                ? "text-muted"
+                : countedPct === 100
+                  ? "text-success"
+                  : "text-rose-300")
             }
           >
-            {countedPct}%
+            {hasActivity ? `${countedPct}%` : "—"}
           </dd>
           <p className="mt-1 text-[11px] text-muted">
-            {countedPct === 100
-              ? "all rows passed churn check"
-              : "rest discounted as short-lived churn"}
+            {!hasActivity
+              ? "no activity to evaluate"
+              : countedPct === 100
+                ? "all rows passed churn check"
+                : "rest discounted as short-lived churn"}
           </p>
         </div>
       </dl>

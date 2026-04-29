@@ -1,3 +1,7 @@
+"use client";
+
+import { useId } from "react";
+
 interface Factor {
   symbol: string;
   name: string;
@@ -74,16 +78,17 @@ function FactorRow({ factor }: FactorRowProps) {
 }
 
 export function FormulaCard() {
+  // useId so the labelledby/heading link is unique even when this card is
+  // rendered both standalone (was on Leaderboard tab earlier) and inside the
+  // dialog at the same time.
+  const headingId = useId();
   return (
-    <section
-      className="border border-line bg-surface"
-      aria-labelledby="formula-heading"
-    >
+    <section className="border border-line bg-surface" aria-labelledby={headingId}>
       <header className="border-b border-line px-6 py-5">
         <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
           Reference
         </div>
-        <h2 id="formula-heading" className="mt-1 text-lg font-bold tracking-tight text-ink">
+        <h2 id={headingId} className="mt-1 text-lg font-bold tracking-tight text-ink">
           The exact formula
         </h2>
         <p className="mt-3 overflow-x-auto rounded-sm border border-line bg-bg/60 px-4 py-3 font-mono text-sm tabular-nums text-ink">
