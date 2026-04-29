@@ -45,10 +45,11 @@ export function StandingCard({ summary, ranked }: StandingCardProps) {
             </span>
             <span className="text-[10px] text-muted">USD-days</span>
           </dd>
+          <p className="mt-1 font-mono text-[11px] text-muted">capital × hours / 24</p>
         </div>
         <div>
           <dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
-            Counted
+            Counted rate
           </dt>
           <dd
             className={
@@ -58,6 +59,11 @@ export function StandingCard({ summary, ranked }: StandingCardProps) {
           >
             {countedPct}%
           </dd>
+          <p className="mt-1 text-[11px] text-muted">
+            {countedPct === 100
+              ? "all rows passed churn check"
+              : "rest discounted as short-lived churn"}
+          </p>
         </div>
       </dl>
     </section>

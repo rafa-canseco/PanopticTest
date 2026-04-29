@@ -54,18 +54,6 @@ function enrichActivities(summary: UserPointsSummary): EnrichedActivity[] {
     .sort((a, b) => a.points.activity.date.localeCompare(b.points.activity.date));
 }
 
-function deriveSeasonWindow(): { start: string; end: string } {
-  const start = campaigns.reduce(
-    (min, c) => (c.startDate < min ? c.startDate : min),
-    campaigns[0].startDate,
-  );
-  const end = campaigns.reduce(
-    (max, c) => (c.endDate > max ? c.endDate : max),
-    campaigns[0].endDate,
-  );
-  return { start, end };
-}
-
 export default function HomePage() {
   const result = useMemo(() => computeDashboard(), []);
   const ranked: UserPointsSummary[] = useMemo(
@@ -105,7 +93,6 @@ export default function HomePage() {
   }
 
   const selected = ranked.find((s) => s.user.id === selectedUserId) ?? ranked[0];
-  const season = deriveSeasonWindow();
 
   return (
     <div className="relative min-h-screen font-sans text-foreground">
@@ -114,22 +101,8 @@ export default function HomePage() {
 
       <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-10">
         <header className="mb-10 sm:mb-14">
-          {/* Eyebrow — spec-sheet metadata */}
-          <div className="reveal reveal-1 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
-            <span className="text-brand-light">●</span>
-            <span>Season 01</span>
-            <Sep />
-            <span>{season.start} → {season.end}</span>
-            <Sep />
-            <span>{users.length} users</span>
-            <Sep />
-            <span>{activities.length} activity rows</span>
-            <Sep />
-            <span>{campaigns.length} campaigns</span>
-          </div>
-
           {/* Display title */}
-          <div className="reveal reveal-2 mt-5 flex items-end gap-5 sm:gap-7">
+          <div className="reveal reveal-2 flex items-end gap-5 sm:gap-7">
             <ArcMark size={72} className="hidden sm:block" />
             <ArcMark size={56} className="block sm:hidden" />
             <h1 className="text-[44px] font-bold leading-[0.92] tracking-[-0.045em] text-ink sm:text-6xl lg:text-7xl">
@@ -146,18 +119,7 @@ export default function HomePage() {
             <TourButton onBeforeStart={() => setActiveTab("my-score")} />
           </div>
 
-          {/* Thesis line — three pillars of the formula */}
-          <div className="reveal reveal-4 mt-7 flex flex-wrap items-baseline gap-x-4 gap-y-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
-            <Pillar number="①" name="Capital" hint="time-weighted exposure" />
-            <span aria-hidden className="text-line">×</span>
-            <Pillar number="②" name="Efficiency" hint="productive utilization" />
-            <span aria-hidden className="text-line">×</span>
-            <Pillar number="③" name="Seasonal" hint="protocol-priority boosts" />
-            <span aria-hidden className="text-line">=</span>
-            <span className="text-foreground">Points</span>
-          </div>
-
-          <div className="reveal reveal-4 rule-fade mt-8" />
+          <div className="reveal reveal-4 rule-fade mt-10" />
         </header>
 
         <div className="reveal reveal-4">
@@ -198,20 +160,6 @@ export default function HomePage() {
         </div>
       </main>
     </div>
-  );
-}
-
-function Sep() {
-  return <span className="text-line">/</span>;
-}
-
-function Pillar({ number, name, hint }: { number: string; name: string; hint: string }) {
-  return (
-    <span className="inline-flex items-baseline gap-1.5">
-      <span className="text-brand-light">{number}</span>
-      <span className="text-foreground">{name}</span>
-      <span className="hidden text-muted sm:inline">· {hint}</span>
-    </span>
   );
 }
 
