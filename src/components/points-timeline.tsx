@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -181,95 +182,123 @@ export function PointsTimeline({ userName, activities, campaigns }: PointsTimeli
       {total === 0 ? (
         <p className="px-6 py-8 text-sm text-muted">No activity to chart.</p>
       ) : (
-        <div className="h-[260px] w-full px-2 py-4 sm:px-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={data}
-              margin={{ top: 12, right: 16, left: -8, bottom: 4 }}
-            >
-              <defs>
-                <linearGradient id="timeline-fill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#9b6fff" stopOpacity={0.45} />
-                  <stop offset="100%" stopColor="#9b6fff" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-
-              <CartesianGrid
-                strokeDasharray="2 4"
-                stroke="rgba(78, 20, 208, 0.12)"
-                vertical={false}
-              />
-
-              {campaigns.map((c) => (
-                <ReferenceArea
-                  key={c.id}
-                  x1={c.startDate}
-                  x2={c.endDate}
-                  fill="rgba(78, 20, 208, 0.12)"
-                  stroke="rgba(155, 111, 255, 0.3)"
-                  strokeDasharray="2 3"
-                  label={{
-                    value: c.name,
-                    position: "insideTop",
-                    offset: 8,
-                    style: {
-                      fontFamily: "var(--font-mono), ui-monospace, monospace",
-                      fontSize: 9,
-                      fill: "rgba(168, 155, 200, 0.7)",
-                      letterSpacing: "0.16em",
-                      textTransform: "uppercase",
-                    },
-                  }}
-                  ifOverflow="extendDomain"
-                />
-              ))}
-
-              <XAxis
-                dataKey="date"
-                tickFormatter={formatShortDate}
-                tick={AXIS_TICK}
-                stroke="rgba(168, 155, 200, 0.4)"
-                tickLine={false}
-                axisLine={false}
-                interval="preserveStartEnd"
-                minTickGap={56}
-              />
-              <YAxis
-                tickFormatter={(v: number) => formatPoints(v)}
-                tick={AXIS_TICK}
-                stroke="rgba(168, 155, 200, 0.4)"
-                tickLine={false}
-                axisLine={false}
-                width={64}
-              />
-
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={{
-                  stroke: "#9b6fff",
-                  strokeWidth: 1,
-                  strokeDasharray: "2 4",
-                }}
-              />
-
-              <Area
-                type="stepAfter"
-                dataKey="cumulative"
-                stroke="#9b6fff"
-                strokeWidth={2}
-                fill="url(#timeline-fill)"
-                isAnimationActive={false}
-                activeDot={{
-                  r: 5,
-                  fill: "#9b6fff",
-                  stroke: "#160934",
-                  strokeWidth: 2,
-                }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        <ChartCanvas data={data} campaigns={campaigns} />
       )}
     </section>
+  );
+}
+
+interface ChartCanvasProps {
+  data: DailyPoint[];
+  campaigns: Campaign[];
+}
+
+// Recharts v3 ResponsiveContainer logs "width(-1) and height(-1)" on the
+// first render because its default initialDimension is { width: -1, height: -1 }
+// and its ResizeObserver hasn't fired yet. We measure the wrapper ourselves
+// and only mount the container once we have concrete dimensions to pass via
+// initialDimension, which short-circuits the -1 phase entirely.
+function ChartCanvas({ data, campaigns }: ChartCanvasProps) {
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    const node = wrapperRef.current;
+    if (!node) return;
+    const measure = () => {
+      const rect = node.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setSize((prev) =>
+          prev && prev.width === rect.width && prev.height === rect.height
+            ? prev
+            : { width: rect.width, height: rect.height },
+        );
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(node);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div ref={wrapperRef} className="h-[260px] w-full px-2 py-4 sm:px-4">
+      {size ? (
+        <ResponsiveContainer width="100%" height="100%" initialDimension={size}>
+          <AreaChart data={data} margin={{ top: 12, right: 16, left: -8, bottom: 4 }}>
+            <defs>
+              <linearGradient id="timeline-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#9b6fff" stopOpacity={0.45} />
+                <stop offset="100%" stopColor="#9b6fff" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+
+            <CartesianGrid
+              strokeDasharray="2 4"
+              stroke="rgba(78, 20, 208, 0.12)"
+              vertical={false}
+            />
+
+            {campaigns.map((c) => (
+              <ReferenceArea
+                key={c.id}
+                x1={c.startDate}
+                x2={c.endDate}
+                fill="rgba(78, 20, 208, 0.12)"
+                stroke="rgba(155, 111, 255, 0.3)"
+                strokeDasharray="2 3"
+                label={{
+                  value: c.name,
+                  position: "insideTop",
+                  offset: 8,
+                  style: {
+                    fontFamily: "var(--font-mono), ui-monospace, monospace",
+                    fontSize: 9,
+                    fill: "rgba(168, 155, 200, 0.7)",
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                  },
+                }}
+                ifOverflow="extendDomain"
+              />
+            ))}
+
+            <XAxis
+              dataKey="date"
+              tickFormatter={formatShortDate}
+              tick={AXIS_TICK}
+              stroke="rgba(168, 155, 200, 0.4)"
+              tickLine={false}
+              axisLine={false}
+              interval="preserveStartEnd"
+              minTickGap={56}
+            />
+            <YAxis
+              tickFormatter={(v: number) => formatPoints(v)}
+              tick={AXIS_TICK}
+              stroke="rgba(168, 155, 200, 0.4)"
+              tickLine={false}
+              axisLine={false}
+              width={64}
+            />
+
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ stroke: "#9b6fff", strokeWidth: 1, strokeDasharray: "2 4" }}
+            />
+
+            <Area
+              type="stepAfter"
+              dataKey="cumulative"
+              stroke="#9b6fff"
+              strokeWidth={2}
+              fill="url(#timeline-fill)"
+              isAnimationActive={false}
+              activeDot={{ r: 5, fill: "#9b6fff", stroke: "#160934", strokeWidth: 2 }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      ) : null}
+    </div>
   );
 }
