@@ -71,7 +71,7 @@ export default function HomePage() {
 
   const initialUserId = ranked[0]?.user.id ?? "";
   const [selectedUserId, setSelectedUserId] = useState(initialUserId);
-  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [activeTab, setActiveTab] = useState<TabId>("inspector");
 
   const enrichedActivities = useMemo<EnrichedActivity[]>(() => {
     const sel = ranked.find((s) => s.user.id === selectedUserId);
@@ -118,19 +118,6 @@ export default function HomePage() {
         <Tabs
           tabs={[
             {
-              id: "overview",
-              label: "Overview",
-              panel: (
-                <OverviewTab
-                  ranked={ranked}
-                  totals={result.totals}
-                  campaigns={campaigns}
-                  selectedUserId={selected.user.id}
-                  onInspectUser={handleInspectUser}
-                />
-              ),
-            },
-            {
               id: "inspector",
               label: "User Inspector",
               panel: (
@@ -145,15 +132,23 @@ export default function HomePage() {
                 />
               ),
             },
+            {
+              id: "overview",
+              label: "Overview",
+              panel: (
+                <OverviewTab
+                  ranked={ranked}
+                  totals={result.totals}
+                  campaigns={campaigns}
+                  selectedUserId={selected.user.id}
+                  onInspectUser={handleInspectUser}
+                />
+              ),
+            },
           ]}
           active={activeTab}
           onChange={(id) => setActiveTab(id as TabId)}
         />
-
-        <footer className="pt-6 text-xs text-muted">
-          All points computed live from <code className="font-mono">aggregateUserPoints</code>.
-          No values are hardcoded.
-        </footer>
       </main>
     </div>
   );
