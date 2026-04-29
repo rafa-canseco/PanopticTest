@@ -185,7 +185,7 @@ The mock data lives in [`src/data`](./src/data):
 - [`campaigns.ts`](./src/data/campaigns.ts): three seasonal campaigns.
 - [`activities.ts`](./src/data/activities.ts): vault and trader activity rows across the season.
 
-The scoring logic consumes these files directly; dashboard values are not hardcoded.
+The scoring logic consumes these files directly.
 
 ## Running Locally
 
