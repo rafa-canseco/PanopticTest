@@ -23,123 +23,113 @@ function multiplierClass(m: number): string {
   return "text-muted";
 }
 
+interface MultiplierTagProps {
+  label: string;
+  value: number;
+}
+
+function MultiplierTag({ label, value }: MultiplierTagProps) {
+  return (
+    <span className="inline-flex items-baseline gap-1 font-mono text-[11px] tabular-nums">
+      <span className="text-muted">{label}</span>
+      <span className={multiplierClass(value)}>{formatMultiplier(value)}</span>
+    </span>
+  );
+}
+
 export function ActivityLog({ userName, activities }: ActivityLogProps) {
   const sorted = [...activities].sort((a, b) =>
     a.points.activity.date.localeCompare(b.points.activity.date),
   );
 
   return (
-    <details className="group border border-line bg-surface">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-4 transition-colors hover:bg-elevated/40 [&::-webkit-details-marker]:hidden">
-        <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
-            Detail · Full activity log
-          </div>
-          <div className="mt-1 text-sm font-bold text-ink">
-            {userName}
-            <span className="text-muted"> · all {activities.length} simulated rows</span>
-          </div>
+    <section
+      data-tour="top-activities"
+      className="border border-line bg-surface"
+      aria-labelledby="activity-log-heading"
+    >
+      <header className="border-b border-line px-6 py-5">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+          Where points came from
         </div>
-        <span
-          aria-hidden
-          className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted transition-transform group-open:rotate-180"
+        <h2
+          id="activity-log-heading"
+          className="mt-1 text-lg font-bold tracking-tight text-ink"
         >
-          ▾
-        </span>
-      </summary>
-      <div className="border-t border-line">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <caption className="sr-only">
-              All simulated activity rows for {userName}, in chronological order. Includes
-              capital, hours, useful ratio, all three multipliers, and the resulting final
-              points.
-            </caption>
-            <thead className="bg-elevated/30 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
-              <tr className="border-b border-line">
-                <th scope="col" className="px-4 py-3 text-left font-medium">Date</th>
-                <th scope="col" className="px-4 py-3 text-left font-medium">Strategy</th>
-                <th scope="col" className="px-4 py-3 text-left font-medium">Cat</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">Capital</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">Hours</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">Useful</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">Q ×</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">C ×</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">Ch ×</th>
-                <th scope="col" className="px-4 py-3 text-right font-medium">Final</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {sorted.map(({ points, qualityMultiplier, campaignMultiplier, churnMultiplier }) => {
-                const a = points.activity;
-                return (
-                  <tr key={a.id} className="transition-colors hover:bg-elevated/40">
-                    <td className="px-4 py-3 font-mono text-xs text-foreground">
+          {userName}
+          <span className="text-muted"> · {activities.length} rows</span>
+        </h2>
+      </header>
+
+      {sorted.length === 0 ? (
+        <p className="px-6 py-8 text-sm text-muted">No activity rows for this user.</p>
+      ) : (
+        <ol className="divide-y divide-line">
+          {sorted.map(({ points, qualityMultiplier, campaignMultiplier, churnMultiplier }) => {
+            const a = points.activity;
+            const final = points.breakdown.finalPoints;
+            return (
+              <li key={a.id} className="px-6 py-4">
+                {/* Top row: date + strategy + cat | final */}
+                <div className="flex items-baseline justify-between gap-4">
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 min-w-0">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted shrink-0">
                       {formatShortDate(a.date)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap items-baseline gap-1.5">
-                        <span className="text-xs font-medium text-foreground">
-                          {formatStrategy(a.strategy)}
-                        </span>
-                        {a.isShortLived ? (
-                          <span className="border border-rose-400/30 bg-rose-400/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-rose-200">
-                            short-lived
-                          </span>
-                        ) : null}
-                        {a.isVaultManagedRebalance ? (
-                          <span className="border border-brand/40 bg-brand-soft px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-brand-light">
-                            rebalance
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={
-                          "border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] " +
-                          (a.category === "vault"
-                            ? "border-brand/40 bg-brand-soft text-brand-light"
-                            : "border-amber-400/30 bg-amber-400/10 text-amber-200")
-                        }
-                      >
-                        {a.category}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono tabular-nums text-foreground">
-                      {formatUsd(a.usdCapital)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono tabular-nums text-foreground">
-                      {formatHours(a.activeHours)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono tabular-nums text-foreground">
-                      {formatPercent(a.usefulRatio)}
-                    </td>
-                    <td
-                      className={`px-4 py-3 text-right font-mono tabular-nums ${multiplierClass(qualityMultiplier)}`}
+                    </span>
+                    <span className="text-line shrink-0">·</span>
+                    <h3 className="text-base font-bold text-ink truncate">
+                      {formatStrategy(a.strategy)}
+                    </h3>
+                    <span
+                      className={
+                        "shrink-0 border px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.14em] " +
+                        (a.category === "vault"
+                          ? "border-brand/40 bg-brand-soft text-brand-light"
+                          : "border-amber-400/30 bg-amber-400/10 text-amber-200")
+                      }
                     >
-                      {formatMultiplier(qualityMultiplier)}
-                    </td>
-                    <td
-                      className={`px-4 py-3 text-right font-mono tabular-nums ${multiplierClass(campaignMultiplier)}`}
-                    >
-                      {formatMultiplier(campaignMultiplier)}
-                    </td>
-                    <td
-                      className={`px-4 py-3 text-right font-mono tabular-nums ${multiplierClass(churnMultiplier)}`}
-                    >
-                      {formatMultiplier(churnMultiplier)}
-                    </td>
-                    <td className="px-4 py-3 text-right font-bold tabular-nums text-ink">
-                      {formatPoints(points.breakdown.finalPoints)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
+                      {a.category}
+                    </span>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-xl font-bold tabular-nums tracking-[-0.02em] text-ink">
+                      {formatPoints(final)}
+                    </span>
+                    <span className="ml-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+                      pts
+                    </span>
+                  </div>
+                </div>
+
+                {/* Inputs */}
+                <p className="mt-1.5 font-mono text-xs tabular-nums text-muted">
+                  {formatUsd(a.usdCapital)} · {formatHours(a.activeHours)} ·{" "}
+                  {formatPercent(a.usefulRatio)} useful
+                </p>
+
+                {/* Multipliers + engine flags */}
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <MultiplierTag label="Q" value={qualityMultiplier} />
+                  <span className="text-line">·</span>
+                  <MultiplierTag label="C" value={campaignMultiplier} />
+                  <span className="text-line">·</span>
+                  <MultiplierTag label="Ch" value={churnMultiplier} />
+                  {a.isShortLived ? (
+                    <span className="ml-auto border border-rose-400/30 bg-rose-400/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-rose-200">
+                      short-lived
+                    </span>
+                  ) : null}
+                  {a.isVaultManagedRebalance ? (
+                    <span className="border border-brand/40 bg-brand-soft px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-brand-light">
+                      rebalance
+                    </span>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </section>
   );
 }
