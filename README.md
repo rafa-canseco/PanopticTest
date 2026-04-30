@@ -36,11 +36,11 @@ The dashboard turns the formula into a user-facing scorecard:
 
 ## Approach
 
-We approached the points system as an incentive design problem, not just a scoring problem.
+I approached the points system as an incentive design problem, not just a scoring problem.
 
-The goal was to reward behavior that would be valuable to HyperUnicorn even if points did not exist: capital staying active, vaults being utilized, traders taking real option-like exposure, and users supporting seasonal protocol priorities. We wanted the system to create a healthy flywheel instead of a short-term farming loop.
+The goal was to reward behavior that would be valuable to HyperUnicorn even if points did not exist: capital staying active, vaults being utilized, traders taking real option-like exposure, and users supporting seasonal protocol priorities. I wanted the system to create a healthy flywheel instead of a short-term farming loop.
 
-Before defining the formula, we looked at common DeFi points programs and their failure modes. Raw TVL rewards whales and mercenary capital. Raw volume rewards churn and wash trading. Referral-heavy systems invite Sybil behavior. Overly complex boost systems become hard to understand and easy to game.
+Before defining the formula, I looked at common DeFi points programs and their failure modes. Raw TVL rewards whales and mercenary capital. Raw volume rewards churn and wash trading. Referral-heavy systems invite Sybil behavior. Overly complex boost systems become hard to understand and easy to game.
 
 That led to the core design principle:
 
@@ -55,7 +55,7 @@ From there, the system is built in layers:
 
 This structure lets HyperUnicorn reward both vault users and direct traders without pretending they contribute in the same way. Both matter, but both need quality filters.
 
-We also considered Panoptic-style behavior specifically. Gamma scalping and vault-managed rebalancing can involve frequent position updates, so the system avoids treating all movement as bad churn. The goal is to discount obvious open/close farming while preserving legitimate strategy maintenance.
+I also considered Panoptic-style behavior specifically. Gamma scalping and vault-managed rebalancing can involve frequent position updates, so the system avoids treating all movement as bad churn. The goal is to discount obvious open/close farming while preserving legitimate strategy maintenance.
 
 ## Decisions
 
