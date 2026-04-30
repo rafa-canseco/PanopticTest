@@ -4,6 +4,8 @@ HyperUnicorn Points is a points system for a hypothetical DeFi protocol where us
 
 **Live demo:** [hyperunicorn-points.vercel.app](https://hyperunicorn-points.vercel.app)
 
+**Walkthrough video:** [youtu.be/6g0pCvYBFnw](https://youtu.be/6g0pCvYBFnw)
+
 **Goal:** show how a points program can reward meaningful protocol activity while reducing incentives for low-quality farming.
 
 ## TL;DR
